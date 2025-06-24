@@ -1,6 +1,7 @@
 body {
     background: linear-gradient(135deg, #b9d1f3, #c5abe2, #bdf0e1);
     background-size: 400% 400%;
+    /* min-height: 100vh; */ /* Ensure gradient covers full viewport height */
     margin: 0;
     font-family: 'Inter', sans-serif;
 }

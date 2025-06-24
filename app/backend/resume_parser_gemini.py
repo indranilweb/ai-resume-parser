@@ -138,7 +138,7 @@ def parse_resume(resume_text: str, required_skills: list[str], filename: str) ->
 
 # --- Main Application Logic ---
 class ResumeParser:
-    def main(dir_path: str, query_string: str):
+    def main(self, dir_path: str, query_string: str):
         """Main function to run the resume parser application."""
         print("--- AI-Powered Resume Parser (Gemini Edition) ---")
         
@@ -200,5 +200,5 @@ class ResumeParser:
         else:
             print("\nNo information could be extracted from any of the provided resumes.")
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()

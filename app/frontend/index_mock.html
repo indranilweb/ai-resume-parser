@@ -59,7 +59,7 @@
 
     <div class="container mx-auto p-4 sm:p-6 lg:p-8">
         <header class="bg-white rounded-xl shadow-md p-6 mb-8">
-            <h1 class="text-3xl font-bold text-gray-900 mb-2">Resume Screener</h1>
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">AI Resume Screener</h1>
             <p class="text-gray-600">Select a folder and enter skills to find the right candidates.</p>
         </header>
 
@@ -141,58 +141,6 @@
 
         // --- Functions ---
 
-         /**
-         * In a real application, this would be a fetch() call to your Python server.
-         * @param {string} folderPath - The path of the folder to search.
-         * @param {string} skills - Comma-separated skills to search for.
-         * @returns {Promise<Array<object>>} - A promise that resolves with the parsed data.
-         */
-         async function parseResumesAPI(folderPath, skills) {
-            console.log(`API Call: Parsing resumes from '${folderPath}' for skills: '${skills}'`);
-            
-            // Show the loader while the API call is in progress
-            loadingIndicator.classList.remove('hidden');
-            resultsTableContainer.classList.add('hidden');
-            noResultsMessage.classList.add('hidden');
-
-            let finalResponse = [];
-
-            try {
-                const response = await fetch('http://localhost:8000/parse-resume', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        dirPath: folderPath,
-                        query: skills,
-                    }),
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    // Simulate filtering based on skills for a more realistic demo
-                    // const skillList = skills.toLowerCase().split(',').map(s => s.trim()).filter(Boolean);
-                    // const filteredResponse = skillList.length === 0 ? mockResponse : mockResponse.filter(resume => 
-                    //     resume.top_5_technical_skills.some(skill => 
-                    //         skillList.includes(skill.toLowerCase())
-                    //     )
-                    // );
-                    finalResponse = data.result;
-                } else {
-                    alert('Failed to fetch results. Please try again.');
-                    finalResponse = [];
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('An error occurred. Please try again.');
-                finalResponse = [];
-            }
-
-            loadingIndicator.classList.add('hidden'); // Hide loader
-            return finalResponse;
-        }
-
         /**
          * Simulates calling the backend API to parse resumes.
          * In a real application, this would be a fetch() call to your Python server.
@@ -200,7 +148,7 @@
          * @param {string} skills - Comma-separated skills to search for.
          * @returns {Promise<Array<object>>} - A promise that resolves with the parsed data.
          */
-        function parseResumesAPIMock(folderPath, skills) {
+        function parseResumesAPI(folderPath, skills) {
             console.log(`API Call: Parsing resumes from '${folderPath}' for skills: '${skills}'`);
             
             // Show the loader while the API call is in progress
@@ -318,7 +266,7 @@
         browseBtn.addEventListener('click', () => {
             // This is a simulation. Browser security prevents scripts from
             // programmatically opening a folder picker and getting the path directly.
-            folderPathInput.value = 'C:\\POC\\indranilweb\\ai-resume-parser\\app\\resumes' // 'C:\\Users\\DemoUser\\Documents\\Resumes'; // Mock path
+            folderPathInput.value = 'C:\\Users\\DemoUser\\Documents\\Resumes'; // Mock path
             searchSection.classList.remove('hidden');
             searchInput.focus();
         });
@@ -340,7 +288,6 @@
             }
 
             try {
-                // const resumeData = await parseResumesAPIMock(folderPath, skills);
                 const resumeData = await parseResumesAPI(folderPath, skills);
                 renderResumes(resumeData);
             } catch (error) {

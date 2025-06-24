@@ -1,4 +1,4 @@
-# uvicorn api-server:app --host 0.0.0.0 --port 8000 --reload
+# uvicorn api_server:app --host 0.0.0.0 --port 8000 --reload
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -22,6 +22,7 @@ async def parse_resume(request: Request):
     request_data = await request.json()
     directory_path = request_data.get("dirPath")
     query_string = request_data.get("query")
+    print(f"Received request to parse resumes in directory: {directory_path} with query: {query_string}")
     if not directory_path or not query_string:
         return {"error": "Both 'directory_path' and 'query_string' are required."}
     

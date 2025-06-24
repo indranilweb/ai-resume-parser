@@ -43,13 +43,14 @@
          if (response.ok) {
              const data = await response.json();
              // Simulate filtering based on skills for a more realistic demo
-             const skillList = skills.toLowerCase().split(',').map(s => s.trim()).filter(Boolean);
-             const filteredResponse = skillList.length === 0 ? data.result : data.result.filter(resume => 
-                 resume.top_5_technical_skills.some(skill => 
-                     skillList.includes(skill.toLowerCase())
-                 )
-             );
-             finalResponse = filteredResponse;
+            //  const skillList = skills.toLowerCase().split(',').map(s => s.trim()).filter(Boolean);
+            //  const filteredResponse = skillList.length === 0 ? data.result : data.result.filter(resume => 
+            //      resume.top_5_technical_skills.some(skill => 
+            //          skillList.includes(skill.toLowerCase())
+            //      )
+            //  );
+            //  finalResponse = filteredResponse;
+             finalResponse = data.result;
          } else {
              alert('Failed to fetch results. Please try again.');
              finalResponse = [];

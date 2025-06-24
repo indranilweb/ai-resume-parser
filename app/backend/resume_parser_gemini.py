@@ -140,7 +140,7 @@ def parse_resume(resume_text: str, required_skills: list[str], filename: str) ->
 
 # --- Main Application Logic ---
 class ResumeParser:
-    def main(self, dir_path: str, query_string: str):
+    def main(self, dir_path: str, query_string: str) -> list[dict]:
         """Main function to run the resume parser application."""
         print("--- AI-Powered Resume Parser (Gemini Edition) ---")
         

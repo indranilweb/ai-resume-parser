@@ -1,3 +1,4 @@
+## Enhancements:
 1. quick summary of each resume
 2. combine all resume in onme prompt text 
 3. ats score
@@ -8,7 +9,7 @@
 
 
 
-pain points:
+## Pain Points:
 1. common repo
 2. hosting infra
 3. api key

@@ -161,6 +161,18 @@
                      ${skillsHtml || '—'}
                  </div>
              </td>
+             <td class="px-2 py-4 text-center">
+                <div class="relative group flex justify-center">
+                    <svg class="w-6 h-6 text-gray-400 cursor-pointer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                    </svg>
+                    <div class="absolute right-full -translate-y-1/2 w-96 mb-2 w-64 hidden group-hover:block z-10">
+                        <div class="bg-gray-800 text-white text-xs rounded py-2 px-3 shadow-lg">
+                            ${resume.summary || 'No summary available.'}
+                        </div>
+                    </div>
+                </div>
+            </td>
          </tr>
      `;
  }

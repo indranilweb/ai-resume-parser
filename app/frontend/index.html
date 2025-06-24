@@ -10,7 +10,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
-            background-color: #f3f4f6;
+            background: linear-gradient(135deg, #b9d1f3, #c5abe2, #bdf0e1);
+            background-size: 400% 400%;
             margin: 0;
             font-family: 'Inter', sans-serif;
         }
@@ -174,13 +175,13 @@
                 if (response.ok) {
                     const data = await response.json();
                     // Simulate filtering based on skills for a more realistic demo
-                    // const skillList = skills.toLowerCase().split(',').map(s => s.trim()).filter(Boolean);
-                    // const filteredResponse = skillList.length === 0 ? mockResponse : mockResponse.filter(resume => 
-                    //     resume.top_5_technical_skills.some(skill => 
-                    //         skillList.includes(skill.toLowerCase())
-                    //     )
-                    // );
-                    finalResponse = data.result;
+                    const skillList = skills.toLowerCase().split(',').map(s => s.trim()).filter(Boolean);
+                    const filteredResponse = skillList.length === 0 ? data.result : data.result.filter(resume => 
+                        resume.top_5_technical_skills.some(skill => 
+                            skillList.includes(skill.toLowerCase())
+                        )
+                    );
+                    finalResponse = filteredResponse;
                 } else {
                     alert('Failed to fetch results. Please try again.');
                     finalResponse = [];

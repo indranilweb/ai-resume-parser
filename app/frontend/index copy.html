@@ -71,14 +71,13 @@
                     <div class="flex flex-col sm:flex-row gap-4">
                         <!-- Note: In a real web app, file system access is restricted. 
                              This input is for display. The 'Browse' button simulates selection. -->
-                        <input type="text" id="folder-path" class="flex-grow bg-gray-100 border-gray-300 border rounded-lg p-3 w-full focus:ring-2 focus:ring-blue-500" placeholder="No folder selected...">
+                        <input type="text" id="folder-path" readonly class="flex-grow bg-gray-100 border-gray-300 border rounded-lg p-3 w-full focus:ring-2 focus:ring-blue-500" placeholder="No folder selected...">
                         <button id="browse-btn" class="w-full sm:w-auto bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out shadow-sm">
                             Browse
                         </button>
                     </div>
-                    <!-- In a real application, you might use an invisible file input to trigger the folder picker.
-                        For example: <input type="file" id="file-picker" webkitdirectory directory multiple style="display:none;" /> -->
-                    <input type="file" id="folder-input" webkitdirectory class="hidden">
+                     <!-- In a real application, you might use an invisible file input to trigger the folder picker.
+                          For example: <input type="file" id="file-picker" webkitdirectory directory multiple style="display:none;" /> -->
                 </div>
 
                 <div id="search-section" class="hidden">
@@ -132,7 +131,6 @@
         // --- DOM Elements ---
         const browseBtn = document.getElementById('browse-btn');
         const folderPathInput = document.getElementById('folder-path');
-        const folderInput = document.getElementById('folder-input');
         const searchInput = document.getElementById('search-input');
         const searchBtn = document.getElementById('search-btn');
         const resultsTableContainer = document.getElementById('results-table-container');
@@ -320,23 +318,10 @@
         browseBtn.addEventListener('click', () => {
             // This is a simulation. Browser security prevents scripts from
             // programmatically opening a folder picker and getting the path directly.
-            folderPathInput.value = folderPathInput.value.replace(/\//g, '//'); // 'C:\\POC\\indranilweb\\ai-resume-parser\\app\\resumes' // 'C:\\Users\\DemoUser\\Documents\\Resumes'; // Mock path
-            // folderInput.click();
+            folderPathInput.value = 'C:\\POC\\indranilweb\\ai-resume-parser\\app\\resumes' // 'C:\\Users\\DemoUser\\Documents\\Resumes'; // Mock path
             searchSection.classList.remove('hidden');
             searchInput.focus();
         });
-
-        // Update folder path input when a folder is selected
-        folderInput.addEventListener('change', (event) => {
-        const files = event.target.files;
-        if (files.length > 0) {
-            // Extract the folder path from the first file's webkitRelativePath
-            const folderPath = files[0].webkitRelativePath.split('/')[0];
-            folderPathInput.value = folderPath;
-        } else {
-            folderPathInput.value = 'No folder selected...';
-        }
-    });
 
         /**
          * Handle "Search" button click to initiate the API call and display results.

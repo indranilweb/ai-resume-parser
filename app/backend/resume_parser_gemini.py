@@ -98,6 +98,8 @@ def construct_prompt(resume_text: str, required_skills: list[str]) -> str:
     2.  "contact_number": The primary phone number.
     3.  "last_3_companies": A list of the last 3 companies the candidate worked for, starting with the most recent.
     4.  "top_5_technical_skills": A list of the top 5 most relevant technical skills from the resume. These skills should be directly from or closely related to the list of required skills I provided ({skills_string}).
+    5.  "years_of_experience": The total years of experience the candidate has in their field.
+    6. "summary": A brief summary of the candidate's professional background and expertise in not more than 100 words.
 
     Your output MUST be a single, valid JSON object. Do not include any explanations, introductory text, or markdown formatting like ```json. If a piece of information cannot be found, use `null` as the value for that key.
     """

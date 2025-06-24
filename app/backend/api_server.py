@@ -28,15 +28,3 @@ async def parse_resume(request: Request):
     
     result = agent.main(directory_path, query_string)
     return {"result": result}
-
-@app.post("/assign-ticket")
-async def assign_ticket(request: Request):
-    ticket = await request.json()
-    assigned_group = agent.assign_ticket(ticket)
-    return {"support_group": assigned_group}
-
-@app.post("/troubleshooting-tips")
-async def suggest_troubleshoot(request: Request):
-    issue = await request.json()
-    tips = agent.suggest_troubleshoot(issue)
-    return {"troubleshooting_tips": tips}

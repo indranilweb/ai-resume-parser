@@ -3,10 +3,11 @@ import json
 import google.generativeai as genai
 import pypdf  # For reading PDF files
 import docx   # For reading DOCX files
+import config
 
 # --- Configuration and Setup ---
-GEMINI_KEY = "AIzaSyB20CYMXUoowm59yrr7toL8bxC0SzdhWes"
-GEMINI_MODEL = "gemini-2.5-flash"
+GEMINI_KEY = config.GEMINI_KEY
+GEMINI_MODEL = config.GEMINI_MODEL
 # Initialize the Gemini client
 # It automatically picks up the API key from the GEMINI_API_KEY environment variable.
 try:
@@ -110,14 +111,14 @@ def construct_batch_prompt(resumes_data: dict, required_skills: list[str]) -> st
 
     1.  **Analyze and Filter:** Carefully read every resume provided in the batch above. Identify which resumes are a strong match for the required skills: "{skills_string}". A strong match means the resume explicitly mentions several of these skills.
 
-    2.  **Extract Information for Matched Resumes ONLY:** For each resume that you identified as a strong match, extract the following information and format it as a JSON object:
-        * "source_file": The original filename of the resume (provided in the start/end markers).
-        * "name": The full name of the candidate.
-        * "contact_number": The primary phone number.
-        * "last_3_companies": A list of the last 3 companies the candidate worked for, starting with the most recent. Be careful to include only the company names, not projects inside companies that the candidate worked for. If there are fewer than 3 companies, include as many as available.
-        * "top_5_technical_skills": A list of up to 5 technical skills from the resume that are most relevant to our required skills list.
-        * "years_of_experience": The total years of experience the candidate has in their field. Calculate this based on the dates mentioned in the resume.
-        * "summary": A brief summary of the candidate's professional background and expertise in not more than 100 words.
+    2.  **Extract Information for Matched Resumes ONLY:** For each resume that you identified as a strong match, extract the following information and format it as a JSON object. Adhere strictly to the data types and formats specified:
+        * "source_file": (String) The original filename of the resume (provided in the start/end markers).
+        * "name": (String) The full name of the candidate.
+        * "contact_number": (String) The primary phone number.
+        * "last_3_companies": (Array of Strings) A list of the last 3 companies the candidate worked for, starting with the most recent. Crucially, include only official company names. Exclude project names, client names, or internal divisions within a company. If fewer than 3 companies are clearly stated, include only all available.
+        * "top_5_technical_skills": (Array of Strings) A list of up to 5 technical skills explicitly mentioned in the resume that are most directly relevant to the {skills_string} and/or are highly prominent in the candidate's experience.
+        * "years_of_experience": (Number) The total calculated professional work experience in years. Calculate this based on the start and end dates of all full-time work experiences listed. Round it to the nearest whole number
+        * "summary": (String) A concise summary of the candidate's professional background and expertise, and most significant achievements. This must be no more than 100 words.
 
     **Output Format:**
     Your output MUST be a single, valid JSON array `[]` containing one JSON object for each matched candidate. If no candidates match the required skills, you MUST return an empty array `[]`.

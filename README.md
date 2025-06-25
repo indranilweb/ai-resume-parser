@@ -26,8 +26,10 @@ This project is an AI-powered resume parser designed to extract and analyze info
 ## Usage
 
 1. Place resumes in the `resumes` folder.
-2. Run the frontend and backend server:
+2. Create Gemini API key at `https://aistudio.google.com/app/apikey`.
+3. Update the API key in `config.py` or set in environment variable.
+4. Run the frontend and backend server:
     ```
     serve.bat
     ```
-3. Access the app at `http://localhost:8080/` in browser.
+5. Access the app at `http://localhost:8080/` in browser.

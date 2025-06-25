@@ -5,13 +5,14 @@ import pypdf  # For reading PDF files
 import docx   # For reading DOCX files
 
 # --- Configuration and Setup ---
-
+GEMINI_KEY = "AIzaSyB20CYMXUoowm59yrr7toL8bxC0SzdhWes"
+GEMINI_MODEL = "gemini-2.5-flash"
 # Initialize the Gemini client
 # It automatically picks up the API key from the GEMINI_API_KEY environment variable.
 try:
     # IMPORTANT: It is recommended to use environment variables for API keys.
     # For this example, the key is placed directly.
-    api_key = "AIzaSyADl9JhrV6eTFRdKlsHEDdVEixJWoahZFU" # os.environ.get("GEMINI_API_KEY")
+    api_key = GEMINI_KEY # os.environ.get("GEMINI_API_KEY")
     if not api_key:
         raise ValueError("GEMINI_API_KEY not found. Please set it as an environment variable or paste it here.")
     genai.configure(api_key=api_key)
@@ -137,7 +138,7 @@ def parse_resumes_batch(resumes_data: dict, required_skills: list[str]) -> list[
 
     try:
         # Select the model, Gemini 1.5 Flash is good for this task.
-        model = genai.GenerativeModel('gemini-2.5-flash')
+        model = genai.GenerativeModel(GEMINI_MODEL)
 
         # Configure the generation to output JSON
         generation_config = genai.types.GenerationConfig(

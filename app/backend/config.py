@@ -1,7 +1,9 @@
 import os
 
 # Add Gemini AI token here or import from env var
-GEMINI_KEY = "AIzaSyADkpZb8vXBt5XXklTVynvXxkdkNk9nr74" # os.getenv("GEMINI_KEY")
+GEMINI_KEY = "AIzaSyAburkU174h2nCfBeg0ILJ2S5X3ZWQ6XG0" # os.getenv("GEMINI_KEY")
+# AIzaSyAburkU174h2nCfBeg0ILJ2S5X3ZWQ6XG0 - IA
+# AIzaSyADkpZb8vXBt5XXklTVynvXxkdkNk9nr74 - SD
 
 # Add Gemini AI model name here
 GEMINI_MODEL = "gemini-2.5-flash"

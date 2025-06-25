@@ -6,6 +6,8 @@
 5. free text for search eg. angular with 5+ years of experience
 6. streamlit for quick ui
 7. quick resume download/packager from ui grid
+8. bookmark / flagging / reserving system
+9. Archiving resume
 
 
 

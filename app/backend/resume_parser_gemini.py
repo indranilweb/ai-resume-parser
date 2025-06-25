@@ -137,7 +137,7 @@ def parse_resumes_batch(resumes_data: dict, required_skills: list[str]) -> list[
 
     try:
         # Select the model, Gemini 1.5 Flash is good for this task.
-        model = genai.GenerativeModel('gemini-2.0-flash')
+        model = genai.GenerativeModel('gemini-2.5-flash')
 
         # Configure the generation to output JSON
         generation_config = genai.types.GenerationConfig(

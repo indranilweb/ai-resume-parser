@@ -93,6 +93,21 @@
         </main>
     </div>
 
+    <!-- Summary modal -->
+    <div id="summary-modal" class="fixed inset-0 flex items-center justify-center bg-gray-300 bg-opacity-50 backdrop-blur-sm hidden">
+        <div class="bg-white bg-opacity-70 rounded-lg shadow-lg p-6 max-w-md w-full">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold">Resume Summary</h2>
+                <button id="summary-close-btn" class="text-gray-500 hover:text-gray-700 focus:outline-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <p id="summary-content" class="text-gray-800 text-sm"></p>
+        </div>
+    </div>
+
     <!-- Linking the JavaScript file -->
     <script src="script.js"></script>
 

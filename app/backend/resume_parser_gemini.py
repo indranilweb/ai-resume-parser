@@ -1,5 +1,6 @@
 import os
 import json
+import hashlib
 import google.generativeai as genai
 import pypdf  # For reading PDF files
 import docx   # For reading DOCX files
@@ -8,6 +9,12 @@ import config
 # --- Configuration and Setup ---
 GEMINI_KEY = config.GEMINI_KEY
 GEMINI_MODEL = config.GEMINI_MODEL
+CACHE_DIR = "cache_dir"
+
+# Ensure cache directory exists
+if not os.path.exists(CACHE_DIR):
+    os.makedirs(CACHE_DIR)
+
 # Initialize the Gemini client
 # It automatically picks up the API key from the GEMINI_API_KEY environment variable.
 try:
@@ -18,7 +25,7 @@ try:
         raise ValueError("GEMINI_API_KEY not found. Please set it as an environment variable or paste it here.")
     genai.configure(api_key=api_key)
 except Exception as e:
-    print(f"Error initializing Gemini client: {e}")
+    print(f"🚨 Error initializing Gemini client: {e}")
     exit()
 
 # --- Text Extraction Functions (Unchanged) ---
@@ -35,7 +42,7 @@ def read_pdf(file_path: str) -> str:
                     text += page_text + "\n"
             return text
     except Exception as e:
-        print(f"Error reading PDF file '{os.path.basename(file_path)}': {e}")
+        print(f"📄❌ Error reading PDF file '{os.path.basename(file_path)}': {e}")
         return ""
 
 def read_docx(file_path: str) -> str:
@@ -45,7 +52,7 @@ def read_docx(file_path: str) -> str:
         text = "\n".join([para.text for para in doc.paragraphs])
         return text
     except Exception as e:
-        print(f"Error reading DOCX file '{os.path.basename(file_path)}': {e}")
+        print(f"📄❌ Error reading DOCX file '{os.path.basename(file_path)}': {e}")
         return ""
 
 def read_txt(file_path: str) -> str:
@@ -54,7 +61,7 @@ def read_txt(file_path: str) -> str:
         with open(file_path, 'r', encoding='utf-8') as file:
             return file.read()
     except Exception as e:
-        print(f"Error reading TXT file '{os.path.basename(file_path)}': {e}")
+        print(f"📄❌ Error reading TXT file '{os.path.basename(file_path)}': {e}")
         return ""
 
 def get_resume_content(file_path: str) -> str:
@@ -73,11 +80,49 @@ def get_resume_content(file_path: str) -> str:
     elif extension == '.docx':
         return read_docx(file_path)
     elif extension == '.doc':
-        print(f"Warning: .doc files are not directly supported. Please convert '{filename}' to .docx or .pdf.")
+        print(f"⚠️ Warning: .doc files are not directly supported. Please convert '{filename}' to .docx or .pdf.")
         return ""
     else:
-        print(f"Warning: Unsupported file type '{extension}' for file '{filename}'. Skipping.")
+        print(f"⚠️ Warning: Unsupported file type '{extension}' for file '{filename}'. Skipping.")
         return ""
+
+# --- Cache Management Functions ---
+
+def generate_cache_key(resumes_data: dict, required_skills: list[str]) -> str:
+    """Generate a unique cache key based on resume content and skills."""
+    # Create a combined string from resume filenames, content hashes, and skills
+    content_parts = []
+    for filename, content in sorted(resumes_data.items()):
+        content_hash = hashlib.md5(content.encode('utf-8')).hexdigest()[:8]
+        content_parts.append(f"{filename}:{content_hash}")
+    
+    skills_str = ",".join(sorted([skill.strip().lower() for skill in required_skills]))
+    combined = "|".join(content_parts) + f"|skills:{skills_str}"
+    
+    return hashlib.md5(combined.encode('utf-8')).hexdigest()
+
+def get_cached_result(cache_key: str) -> list[dict]:
+    """Retrieve cached result if it exists."""
+    cache_file = os.path.join(CACHE_DIR, f"{cache_key}.json")
+    if os.path.exists(cache_file):
+        try:
+            with open(cache_file, 'r', encoding='utf-8') as f:
+                result = json.load(f)
+            print(f"📂 Cache file found: {cache_key[:12]}...json")
+            return result
+        except Exception as e:
+            print(f"⚠️  Warning: Could not read cache file: {e}")
+    return None
+
+def save_to_cache(cache_key: str, result: list[dict]) -> None:
+    """Save result to cache."""
+    cache_file = os.path.join(CACHE_DIR, f"{cache_key}.json")
+    try:
+        with open(cache_file, 'w', encoding='utf-8') as f:
+            json.dump(result, f, indent=2, ensure_ascii=False)
+        print(f"💾 Cache file created: {cache_key[:12]}...json")
+    except Exception as e:
+        print(f"⚠️  Warning: Could not save to cache: {e}")
 
 # --- Gemini API Interaction (Modified for Batch Processing) ---
 
@@ -125,17 +170,28 @@ def construct_batch_prompt(resumes_data: dict, required_skills: list[str]) -> st
     Do not include any explanations, introductory text, markdown formatting like ```json, or any text outside of the final JSON array.
     If a piece of information cannot be found, use `null` as the value for that key.
     """
-    print("Constructed a batch prompt for the Gemini API.")
+    print("📝 Constructed a batch prompt for the Gemini API.")
     return prompt
 
 def parse_resumes_batch(resumes_data: dict, required_skills: list[str]) -> list[dict]:
     """Sends the combined resume text to the Gemini API for batch parsing and filtering."""
     if not resumes_data:
-        print("-> No resume content to process.")
+        print("❌ No resume content to process.")
         return []
 
+    # Check cache first
+    cache_key = generate_cache_key(resumes_data, required_skills)
+    print(f"🔑 Generated cache key: {cache_key[:12]}...")
+    cached_result = get_cached_result(cache_key)
+    
+    if cached_result is not None:
+        print("🎯 CACHE HIT: Found cached result! Skipping Gemini API call.")
+        print(f"✅ Returning {len(cached_result)} cached candidate(s)")
+        return cached_result
+
+    print("❌ CACHE MISS: No cached result found.")
     prompt = construct_batch_prompt(resumes_data, required_skills)
-    print("Connecting to Gemini API to process the batch... (This may take a moment)")
+    print("🚀 GEMINI API: Connecting to process the batch... (This may take a moment)")
 
     try:
         # Select the model, Gemini 1.5 Flash is good for this task.
@@ -153,13 +209,19 @@ def parse_resumes_batch(resumes_data: dict, required_skills: list[str]) -> list[
         # The response text should be a valid JSON string (a list of objects)
         response_content = response.text
         parsed_data = json.loads(response_content)
+        
+        # Save to cache
+        save_to_cache(cache_key, parsed_data)
+        print("💾 CACHE SAVE: Result saved to cache for future use.")
+        print(f"✅ Gemini API returned {len(parsed_data)} candidate(s)")
+        
         return parsed_data
     except json.JSONDecodeError:
-        print("\nError: Failed to decode JSON from the API response.")
+        print("\n🚨 Error: Failed to decode JSON from the API response.")
         print(f"Raw Gemini Response:\n---\n{response.text}\n---")
         return []
     except Exception as e:
-        print(f"\nAn error occurred while communicating with the Gemini API: {e}")
+        print(f"\n🚨 An error occurred while communicating with the Gemini API: {e}")
         if 'response' in locals() and hasattr(response, 'text'):
             print(f"Raw Gemini Response:\n---\n{response.text}\n---")
         return []
@@ -168,16 +230,16 @@ def parse_resumes_batch(resumes_data: dict, required_skills: list[str]) -> list[
 class ResumeParser:
     def main(self, dir_path: str, query_string: str) -> list[dict]:
         """Main function to run the resume parser application."""
-        print("--- AI-Powered Resume Parser (Batch Mode) ---")
+        print("🤖 --- AI-Powered Resume Parser (Batch Mode) ---")
         
         resume_dir = dir_path.strip()
         if not os.path.isdir(resume_dir):
-            print(f"Error: Directory '{resume_dir}' not found.")
+            print(f"❌ Error: Directory '{resume_dir}' not found.")
             return []
             
         skills_input = query_string.strip()
         if not skills_input:
-            print("Error: You must specify at least one skill.")
+            print("❌ Error: You must specify at least one skill.")
             return []
         required_skills = [skill.strip() for skill in skills_input.split(',')]
 
@@ -185,10 +247,10 @@ class ResumeParser:
         resume_files = [f for f in os.listdir(resume_dir) if f.lower().endswith(supported_extensions)]
 
         if not resume_files:
-            print(f"No supported resumes (.txt, .pdf, .docx) found in '{resume_dir}'.")
+            print(f"❌ No supported resumes (.txt, .pdf, .docx) found in '{resume_dir}'.")
             return []
 
-        print(f"\nFound {len(resume_files)} resume(s). Reading content...")
+        print(f"\n📂 Found {len(resume_files)} resume(s). Reading content...")
         
         all_resumes_data = {}
         for filename in resume_files:
@@ -196,24 +258,24 @@ class ResumeParser:
             resume_text = get_resume_content(file_path)
             if resume_text and resume_text.strip():
                 all_resumes_data[filename] = resume_text
-                print(f"  - Successfully read '{filename}'")
+                print(f"  ✅ Successfully read '{filename}'")
             else:
-                print(f"  - Could not read content from '{filename}'. Skipping.")
+                print(f"  ❌ Could not read content from '{filename}'. Skipping.")
 
         if not all_resumes_data:
-            print("\nCould not read any resume content. Exiting.")
+            print("\n❌ Could not read any resume content. Exiting.")
             return []
 
         # The single API call happens here
         matched_candidates = parse_resumes_batch(all_resumes_data, required_skills)
 
         if matched_candidates:
-            print(f"\n\n--- Found {len(matched_candidates)} Matched Candidate(s) ---")
+            print(f"\n\n🎉 --- Found {len(matched_candidates)} Matched Candidate(s) ---")
             # Pretty-print the final JSON output
             print(json.dumps(matched_candidates, indent=4))
             return matched_candidates
         else:
-            print("\n--- No candidates matched the required skills from the provided resumes. ---")
+            print("\n❌ --- No candidates matched the required skills from the provided resumes. ---")
             return []
 
 # Example of how to run the class

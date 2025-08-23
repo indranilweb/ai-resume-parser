@@ -1,19 +1,42 @@
 import os
 import json
 import hashlib
+import numpy as np
+import pickle
 import google.generativeai as genai
 import pypdf  # For reading PDF files
 import docx   # For reading DOCX files
 import config
+from sentence_transformers import SentenceTransformer
+import faiss
 
 # --- Configuration and Setup ---
 GEMINI_KEY = config.GEMINI_KEY
 GEMINI_MODEL = config.GEMINI_MODEL
 CACHE_DIR = "cache_dir"
+VECTOR_DB_DIR = "vector_db"
 
-# Ensure cache directory exists
-if not os.path.exists(CACHE_DIR):
-    os.makedirs(CACHE_DIR)
+# Vector search configuration
+ENABLE_VECTOR_SEARCH = True  # Set to False to disable vector search
+SIMILARITY_THRESHOLD = 0.3   # Minimum similarity score (0-1)
+MAX_VECTOR_RESULTS = None    # Maximum resumes to pass to Gemini (None = no limit)
+
+# Ensure directories exist
+for dir_path in [CACHE_DIR, VECTOR_DB_DIR]:
+    if not os.path.exists(dir_path):
+        os.makedirs(dir_path)
+
+# Initialize the sentence transformer model for embeddings
+embedding_model = None
+if ENABLE_VECTOR_SEARCH:
+    try:
+        embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
+        print("🔧 Sentence transformer model loaded successfully")
+    except Exception as e:
+        print(f"⚠️ Warning: Could not load sentence transformer model: {e}")
+        print("Vector search will be disabled")
+else:
+    print("🔧 Vector search disabled by configuration")
 
 # Initialize the Gemini client
 # It automatically picks up the API key from the GEMINI_API_KEY environment variable.
@@ -86,6 +109,152 @@ def get_resume_content(file_path: str) -> str:
         print(f"⚠️ Warning: Unsupported file type '{extension}' for file '{filename}'. Skipping.")
         return ""
 
+# --- Vector Database Functions ---
+
+def get_vector_db_path(resumes_data: dict) -> str:
+    """Generate a unique vector database path based on resume content."""
+    content_parts = []
+    for filename, content in sorted(resumes_data.items()):
+        content_hash = hashlib.md5(content.encode('utf-8')).hexdigest()[:8]
+        content_parts.append(f"{filename}:{content_hash}")
+    
+    combined = "|".join(content_parts)
+    db_hash = hashlib.md5(combined.encode('utf-8')).hexdigest()
+    return os.path.join(VECTOR_DB_DIR, f"resume_db_{db_hash}")
+
+def create_vector_database(resumes_data: dict) -> tuple:
+    """Create FAISS vector database from resume content."""
+    if not embedding_model:
+        return None, None
+    
+    db_path = get_vector_db_path(resumes_data)
+    
+    # Check if vector DB already exists
+    if os.path.exists(f"{db_path}.index") and os.path.exists(f"{db_path}_metadata.pkl"):
+        try:
+            # Load existing vector database
+            index = faiss.read_index(f"{db_path}.index")
+            with open(f"{db_path}_metadata.pkl", 'rb') as f:
+                metadata = pickle.load(f)
+            print(f"📂 Loaded existing vector database: {os.path.basename(db_path)}")
+            return index, metadata
+        except Exception as e:
+            print(f"⚠️ Could not load existing vector DB: {e}")
+    
+    # Create new vector database
+    print("🔧 Creating vector database from resumes...")
+    
+    texts = []
+    metadata = []
+    
+    for filename, content in resumes_data.items():
+        # Split content into chunks for better semantic search
+        chunks = split_text_into_chunks(content, chunk_size=512, overlap=50)
+        for i, chunk in enumerate(chunks):
+            texts.append(chunk)
+            metadata.append({
+                'filename': filename,
+                'chunk_id': i,
+                'content': chunk
+            })
+    
+    if not texts:
+        print("❌ No text content to vectorize")
+        return None, None
+    
+    # Generate embeddings
+    print(f"🔧 Generating embeddings for {len(texts)} text chunks...")
+    embeddings = embedding_model.encode(texts, show_progress_bar=False)
+    
+    # Create FAISS index
+    dimension = embeddings.shape[1]
+    index = faiss.IndexFlatIP(dimension)  # Inner product for cosine similarity
+    
+    # Normalize embeddings for cosine similarity
+    faiss.normalize_L2(embeddings)
+    index.add(embeddings.astype(np.float32))
+    
+    # Save vector database
+    try:
+        faiss.write_index(index, f"{db_path}.index")
+        with open(f"{db_path}_metadata.pkl", 'wb') as f:
+            pickle.dump(metadata, f)
+        print(f"💾 Vector database saved: {os.path.basename(db_path)}")
+    except Exception as e:
+        print(f"⚠️ Could not save vector DB: {e}")
+    
+    return index, metadata
+
+def split_text_into_chunks(text: str, chunk_size: int = 512, overlap: int = 50) -> list:
+    """Split text into overlapping chunks for better semantic search."""
+    words = text.split()
+    chunks = []
+    
+    for i in range(0, len(words), chunk_size - overlap):
+        chunk = ' '.join(words[i:i + chunk_size])
+        if chunk.strip():
+            chunks.append(chunk)
+    
+    return chunks if chunks else [text]
+
+def semantic_search_resumes(required_skills: list, resumes_data: dict, top_k: int = None, similarity_threshold: float = None) -> dict:
+    """Perform semantic search to filter resumes based on required skills."""
+    if not embedding_model:
+        print("⚠️ Vector search disabled - returning all resumes")
+        return resumes_data
+    
+    if not required_skills or not resumes_data:
+        return resumes_data
+    
+    # Use global configuration if not specified
+    if top_k is None:
+        top_k = MAX_VECTOR_RESULTS
+    if similarity_threshold is None:
+        similarity_threshold = SIMILARITY_THRESHOLD
+    
+    # Create or load vector database
+    index, metadata = create_vector_database(resumes_data)
+    if not index or not metadata:
+        print("❌ Could not create vector database - returning all resumes")
+        return resumes_data
+    
+    # Create query from required skills
+    skills_query = f"Required skills and experience: {', '.join(required_skills)}"
+    
+    print(f"🔍 Performing semantic search for: {skills_query}")
+    
+    # Generate query embedding
+    query_embedding = embedding_model.encode([skills_query])
+    faiss.normalize_L2(query_embedding)
+    
+    # Search for similar chunks
+    search_k = min(len(metadata), top_k if top_k else len(metadata))
+    scores, indices = index.search(query_embedding.astype(np.float32), search_k)
+    
+    # Aggregate scores per resume file
+    resume_scores = {}
+    for score, idx in zip(scores[0], indices[0]):
+        if score >= similarity_threshold:
+            filename = metadata[idx]['filename']
+            if filename not in resume_scores:
+                resume_scores[filename] = []
+            resume_scores[filename].append(score)
+    
+    # Calculate average score per resume
+    filtered_resumes = {}
+    for filename, scores_list in resume_scores.items():
+        avg_score = sum(scores_list) / len(scores_list)
+        if avg_score >= similarity_threshold:
+            filtered_resumes[filename] = resumes_data[filename]
+            print(f"  ✅ {filename} (similarity: {avg_score:.3f})")
+    
+    if filtered_resumes:
+        print(f"🎯 Vector search filtered {len(resumes_data)} → {len(filtered_resumes)} resumes")
+        return filtered_resumes
+    else:
+        print(f"⚠️ No resumes met similarity threshold ({similarity_threshold}) - returning all resumes")
+        return resumes_data
+
 # --- Cache Management Functions ---
 
 def generate_cache_key(resumes_data: dict, required_skills: list[str]) -> str:
@@ -98,6 +267,10 @@ def generate_cache_key(resumes_data: dict, required_skills: list[str]) -> str:
     
     skills_str = ",".join(sorted([skill.strip().lower() for skill in required_skills]))
     combined = "|".join(content_parts) + f"|skills:{skills_str}"
+    
+    # Add vector search indicator to cache key
+    vector_indicator = "vector_enabled" if embedding_model else "vector_disabled"
+    combined += f"|{vector_indicator}"
     
     return hashlib.md5(combined.encode('utf-8')).hexdigest()
 
@@ -230,7 +403,7 @@ def parse_resumes_batch(resumes_data: dict, required_skills: list[str]) -> list[
 class ResumeParser:
     def main(self, dir_path: str, query_string: str) -> list[dict]:
         """Main function to run the resume parser application."""
-        print("🤖 --- AI-Powered Resume Parser (Batch Mode) ---")
+        print("🤖 --- AI-Powered Resume Parser (Vector + Batch Mode) ---")
         
         resume_dir = dir_path.strip()
         if not os.path.isdir(resume_dir):
@@ -266,8 +439,20 @@ class ResumeParser:
             print("\n❌ Could not read any resume content. Exiting.")
             return []
 
-        # The single API call happens here
-        matched_candidates = parse_resumes_batch(all_resumes_data, required_skills)
+        # Perform semantic search to filter resumes before Gemini API call
+        print(f"\n🔍 --- Semantic Filtering Phase ---")
+        filtered_resumes = semantic_search_resumes(required_skills, all_resumes_data)
+        
+        if not filtered_resumes:
+            print("\n❌ --- No candidates found through semantic search. ---")
+            return []
+        
+        if len(filtered_resumes) < len(all_resumes_data):
+            print(f"📊 Semantic search reduced API load: {len(all_resumes_data)} → {len(filtered_resumes)} resumes")
+
+        # The single API call happens here with filtered resumes
+        print(f"\n🚀 --- Gemini API Processing Phase ---")
+        matched_candidates = parse_resumes_batch(filtered_resumes, required_skills)
 
         if matched_candidates:
             print(f"\n\n🎉 --- Found {len(matched_candidates)} Matched Candidate(s) ---")
@@ -275,7 +460,7 @@ class ResumeParser:
             print(json.dumps(matched_candidates, indent=4))
             return matched_candidates
         else:
-            print("\n❌ --- No candidates matched the required skills from the provided resumes. ---")
+            print("\n❌ --- No candidates matched the required skills from the filtered resumes. ---")
             return []
 
 # Example of how to run the class

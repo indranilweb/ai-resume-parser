@@ -136,58 +136,50 @@ function parseResumesAPIMock(folderPath, skills) {
 function createResumeTableRow(resume) {
     // Format skills into styled badges
     const skillsHtml = (resume.top_5_technical_skills || []).map(skill => 
-        `<span class="inline-block bg-blue-100 text-blue-800 text-xs font-medium mr-2 mb-2 px-2.5 py-1 rounded-full whitespace-nowrap">${skill || 'N/A'}</span>`
+        `<span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium skill-badge mr-2 mb-1">${skill || 'N/A'}</span>`
     ).join('');
 
     // Format company list, filtering out null or "null" string values
     const companiesHtml = (resume.last_3_companies || [])
         .filter(company => company && company.toLowerCase() !== 'null')
-        .map(company => `<li>${company}</li>`).join('');
+        .map(company => `<li class="text-gray-100 text-xs mb-1">${company}</li>`).join('');
 
     return `
-        <tr class="bg-white bg-opacity-50 border-b hover:bg-opacity-80 transition-colors duration-150">
-            <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-                ${resume.name || '—'}
-            </th>
-            <td class="px-6 py-4">
-                ${resume.contact_number || '—'}
+        <tr class="hover:bg-gray-50 hover:bg-opacity-5 transition-colors duration-150">
+            <td class="px-4 py-3">
+                <div class="font-medium text-gray-100 text-sm">${resume.name || '—'}</div>
             </td>
-            <td class="px-6 py-4 font-bold">
-                ${resume.years_of_experience || '—'}
+            <td class="px-4 py-3">
+                <span class="text-gray-400 text-sm font-mono">${resume.contact_number || '—'}</span>
             </td>
-            <td class="px-6 py-4">
-                <ul class="list-disc pl-5">
-                    ${companiesHtml || '—'}
+            <td class="px-4 py-3">
+                <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-600 bg-opacity-20 text-blue-400">
+                    ${resume.years_of_experience || '—'} years
+                </span>
+            </td>
+            <td class="px-4 py-3">
+                <ul class="company-list space-y-1 text-xs">
+                    ${companiesHtml || '<li class="text-gray-400">—</li>'}
                 </ul>
             </td>
-            <td class="px-6 py-4">
+            <td class="px-4 py-3">
                 <div class="flex flex-wrap">
-                    ${skillsHtml || '—'}
+                    ${skillsHtml || '<span class="text-gray-400 text-xs">—</span>'}
                 </div>
             </td>
-            <!-- <td class="px-2 py-4 text-center">
-            <div class="relative group flex justify-center">
-                <svg class="w-6 h-6 text-gray-400 cursor-pointer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
-                </svg>
-                <div class="absolute right-full -translate-y-1/2 w-96 mb-2 w-64 hidden group-hover:block z-10">
-                    <div class="bg-gray-800 text-white text-xs rounded py-2 px-3 shadow-lg">
-                        ${resume.summary || 'No summary available.'}
+            <td class="px-4 py-3 text-center">
+                <div id="summary-icon" class="relative flex justify-center">
+                    <button class="p-1 text-gray-400 hover:text-blue-400 hover:bg-gray-900 rounded transition-colors cursor-pointer">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                    <div id="summary-text" class="hidden">
+                        <p class="text-blue-400 text-base font-semibold mb-2">${resume.name || '—'}</p>
+                        <p class="text-sm text-gray-100">${resume.summary || 'No summary available.'}</p>
                     </div>
                 </div>
-            </div>
-        </td> -->
-        <td class="px-2 py-4 text-center">
-            <div id="summary-icon" class="relative flex justify-center">
-                <svg class="w-6 h-6 text-gray-400 cursor-pointer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
-                </svg>
-                <div id="summary-text" class="hidden w-0 h-0">
-                    <p class="text-blue-600 text-base font-bold mb-2">${resume.name || '—'}</p>
-                    <p class="text-sm">${resume.summary || 'No summary available.'}</p>
-                </div>
-            </div>
-        </td>
+            </td>
         </tr>
     `;
 }
@@ -208,13 +200,13 @@ function displayCacheStatus(cacheInfo) {
 
     // Vector cache indicator
     const vectorCacheIcon = document.createElement('div');
-    vectorCacheIcon.className = `flex items-center space-x-2 px-3 py-1 rounded-full text-sm font-medium ${
+    vectorCacheIcon.className = `flex items-center space-x-2 px-2 py-1 rounded-md text-xs font-medium ${
         cacheInfo.vector_cache_hit 
-            ? 'bg-green-100 text-green-800' 
-            : 'bg-yellow-100 text-yellow-800'
+            ? 'cache-hit' 
+            : 'cache-miss'
     }`;
     vectorCacheIcon.innerHTML = `
-        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
             <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"></path>
         </svg>
         <span>Vector: ${cacheInfo.vector_cache_hit ? 'Cached' : 'Fresh'}</span>
@@ -223,13 +215,13 @@ function displayCacheStatus(cacheInfo) {
 
     // Gemini cache indicator
     const geminiCacheIcon = document.createElement('div');
-    geminiCacheIcon.className = `flex items-center space-x-2 px-3 py-1 rounded-full text-sm font-medium ${
+    geminiCacheIcon.className = `flex items-center space-x-2 px-2 py-1 rounded-md text-xs font-medium ${
         cacheInfo.gemini_cache_hit 
-            ? 'bg-green-100 text-green-800' 
-            : 'bg-blue-100 text-blue-800'
+            ? 'cache-hit' 
+            : 'cache-miss'
     }`;
     geminiCacheIcon.innerHTML = `
-        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"></path>
         </svg>
         <span>Gemini: ${cacheInfo.gemini_cache_hit ? 'Cached' : 'Fresh'}</span>
@@ -242,7 +234,7 @@ function displayCacheStatus(cacheInfo) {
         infoText += ` • ${cacheInfo.processing_time}s`;
     }
     if (cacheInfo.cache_key) {
-        infoText += ` • Key: ${cacheInfo.cache_key}`;
+        infoText += ` • ${cacheInfo.cache_key.substring(0, 8)}...`;
     }
     
     processingInfo.textContent = infoText;
@@ -279,20 +271,53 @@ browseBtn.addEventListener('click', () => {
     // programmatically opening a folder picker and getting the path directly.
     folderPathInput.value = folderPathInput.value.replace(/\//g, '//'); // 'C:\\POC\\indranilweb\\ai-resume-parser\\app\\resumes' // 'C:\\Users\\DemoUser\\Documents\\Resumes'; // Mock path
     // folderInput.click();
-    searchSection.classList.remove('hidden');
+    
+    // Enable step 2 when folder is selected
+    enableStep2();
     searchInput.focus();
 });
 
+/**
+ * Enable Step 2 controls when folder is selected
+ */
+function enableStep2() {
+    const searchSection = document.getElementById('search-section');
+    const searchInput = document.getElementById('search-input');
+    const searchBtn = document.getElementById('search-btn');
+    const forceAnalyzeBtn = document.getElementById('force-analyze-btn');
+    
+    // Remove disabled styling and enable controls
+    searchSection.classList.remove('opacity-50', 'pointer-events-none');
+    searchSection.classList.add('opacity-100');
+    
+    // Update step 2 indicator color
+    const step2Number = searchSection.querySelector('.w-6.h-6');
+    const step2Icon = searchSection.querySelector('.fas');
+    
+    step2Number.classList.remove('bg-gray-500');
+    step2Number.classList.add('bg-blue-600');
+    
+    step2Icon.classList.remove('text-gray-500');
+    step2Icon.classList.add('text-blue-400');
+    
+    // Enable form controls
+    searchInput.disabled = false;
+    searchBtn.disabled = false;
+    forceAnalyzeBtn.disabled = false;
+}
+
 // Update folder path input when a folder is selected
 folderInput.addEventListener('change', (event) => {
-const files = event.target.files;
-if (files.length > 0) {
-    // Extract the folder path from the first file's webkitRelativePath
-    const folderPath = files[0].webkitRelativePath.split('/')[0];
-    folderPathInput.value = folderPath;
-} else {
-    folderPathInput.value = 'No folder selected...';
-}
+    const files = event.target.files;
+    if (files.length > 0) {
+        // Extract the folder path from the first file's webkitRelativePath
+        const folderPath = files[0].webkitRelativePath.split('/')[0];
+        folderPathInput.value = folderPath;
+        // Enable step 2 when folder is actually selected
+        enableStep2();
+    } else {
+        folderPathInput.value = 'No folder selected...';
+    }
 });
 
 /**
@@ -364,7 +389,7 @@ summaryModal.addEventListener('click', (event) => {
  * Add an event listener to the icon to pass the summary text to the modal
  */
 function addSummaryIconsEventListeners() {
-    const summaryIcons = document.querySelectorAll('#summary-icon svg');
+    const summaryIcons = document.querySelectorAll('#summary-icon button');
     summaryIcons.forEach((icon) => {
         icon.addEventListener('click', (event) => {
             console.log('Summary icon clicked:', event.target);

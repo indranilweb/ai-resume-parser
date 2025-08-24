@@ -113,8 +113,25 @@ button:active {
 }
 
 .company-list li::before {
-    content: "→";
+    content: "•";
     position: absolute;
     left: 0;
     color: #9ca3af; /* gray-400 */
+}
+
+/* Resume count tag styling */
+/* Subtle resume count text on the right of the header */
+#resume-count {
+    transition: opacity 0.18s ease, transform 0.18s ease;
+    opacity: 0.95;
+}
+
+/* small entrance effect */
+@keyframes subtleSlideIn {
+    from { opacity: 0; transform: translateX(6px); }
+    to { opacity: 0.95; transform: translateX(0); }
+}
+
+#resume-count:not(.hidden) {
+    animation: subtleSlideIn 0.2s ease-out;
 }

@@ -525,7 +525,10 @@ class ResumeParser:
         if matched_candidates:
             print(f"\n\n🎉 --- Found {len(matched_candidates)} Matched Candidate(s) ---")
             # Pretty-print the final JSON output
-            print(json.dumps(matched_candidates, indent=4))
+            # print(json.dumps(matched_candidates, indent=4))
+            print("Matched candidate files:")
+            for candidate in matched_candidates:
+                print(f"  - {candidate.get('source_file', 'Unknown')}")
             return matched_candidates, cache_info
         else:
             print("\n❌ --- No candidates matched the required skills from the filtered resumes. ---")

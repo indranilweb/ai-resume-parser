@@ -20,13 +20,19 @@
         <!-- Combined Header and Controls Section -->
         <div class="border border-gray-700 rounded-lg bg-gray-800 p-6 mb-6">
             <!-- Header -->
-            <div class="flex items-center space-x-3 mb-3">
-                <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-file-text text-white text-sm"></i>
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-file-text text-white text-sm"></i>
+                    </div>
+                    <h1 class="text-2xl font-semibold text-gray-100">
+                        <span class="text-blue-400">AI-powered</span> Resume Parser
+                    </h1>
                 </div>
-                <h1 class="text-2xl font-semibold text-gray-100">
-                    <span class="text-blue-400">AI-powered</span> Resume Parser
-                </h1>
+                <div id="resume-count" class="hidden text-sm text-gray-400 border border-gray-500 rounded-md px-2 py-1 font-mono">
+                    <span class="inline-block w-2 h-2 rounded-full bg-green-500"></span>
+                    <span id="resume-count-num">0</span> resume(s) analyzed
+                </div>
             </div>
             <p class="text-gray-400 text-sm mb-6">Find the right candidates by analyzing resumes with AI technology.</p>
 
@@ -36,7 +42,7 @@
                 <div class="space-y-4">
                     <label for="folder-path" class="block text-sm font-medium text-gray-100 mb-3">
                         <span class="flex items-center space-x-3">
-                            <span class="w-6 h-6 bg-blue-600 text-white rounded-full text-xs flex items-center justify-center font-semibold">1</span>
+                            <span class="w-6 h-6 bg-blue-600 text-white rounded-md text-xs flex items-center justify-center font-semibold">1</span>
                             <i class="fas fa-folder-open text-blue-400"></i>
                             <span>Enter Resume Folder Path</span>
                         </span>
@@ -48,7 +54,7 @@
                         <button id="browse-btn" 
                             class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition-colors flex items-center space-x-2">
                             <i class="fas fa-circle-arrow-right"></i>
-                            <span>Next</span>
+                            <span>Proceed</span>
                         </button>
                     </div>
                     <input type="file" id="folder-input" webkitdirectory directory multiple class="hidden">
@@ -58,7 +64,7 @@
                 <div id="search-section" class="space-y-4 opacity-50 pointer-events-none transition-all duration-300">
                     <label for="search-input" class="block text-sm font-medium text-gray-100 mb-3">
                         <span class="flex items-center space-x-3">
-                            <span class="w-6 h-6 bg-gray-500 text-white rounded-full text-xs flex items-center justify-center font-semibold">2</span>
+                            <span class="w-6 h-6 bg-gray-500 text-white rounded-md text-xs flex items-center justify-center font-semibold">2</span>
                             <i class="fas fa-search text-gray-500"></i>
                             <span>Enter Skills to Search</span>
                         </span>
@@ -67,7 +73,7 @@
                         <div class="relative flex-1">
                             <i class="fas fa-tags text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
                             <input type="text" id="search-input" 
-                                class="w-full pl-10 pr-3 py-2 bg-gray-900 border border-gray-700 rounded-md text-gray-100 placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none text-sm" 
+                                class="w-full pl-10 pr-3 py-2 bg-gray-900 border border-gray-700 rounded-md text-gray-100 placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none text-sm font-mono" 
                                 placeholder="e.g., Angular, .NET, C#, React, Python"
                                 disabled>
                         </div>

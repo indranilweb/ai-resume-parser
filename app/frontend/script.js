@@ -16,6 +16,8 @@ const loadingIndicator = document.getElementById('loading-indicator');
 const cacheStatus = document.getElementById('cache-status');
 const cacheIndicators = document.getElementById('cache-indicators');
 const processingInfo = document.getElementById('processing-info');
+const resumeCountContainer = document.getElementById('resume-count');
+const resumeCountNum = document.getElementById('resume-count-num');
 
 // --- Functions ---
 /**
@@ -33,6 +35,9 @@ async function parseResumesAPI(folderPath, skills, forceAnalyze = false) {
     resultsTableContainer.classList.add('hidden');
     noResultsMessage.classList.add('hidden');
     cacheStatus.classList.add('hidden');
+    
+    // Hide the resume count while loading
+    if (resumeCountContainer) resumeCountContainer.classList.add('hidden');
 
     let finalResponse = [];
     let cacheInfo = null;
@@ -82,6 +87,9 @@ function parseResumesAPIMock(folderPath, skills) {
     loadingIndicator.classList.remove('hidden');
     resultsTableContainer.classList.add('hidden');
     noResultsMessage.classList.add('hidden');
+    
+    // Hide the resume count while loading
+    if (resumeCountContainer) resumeCountContainer.classList.add('hidden');
 
     return new Promise((resolve) => {
         // Simulate network delay
@@ -185,6 +193,20 @@ function createResumeTableRow(resume) {
 }
 
 /**
+ * Update the resume count tag in the header
+ * @param {number} count - Number of analyzed resumes
+ */
+function updateResumeCount(count) {
+    if (!resumeCountContainer || !resumeCountNum) return;
+    if (count > 0) {
+        resumeCountNum.textContent = count;
+        resumeCountContainer.classList.remove('hidden');
+    } else {
+        resumeCountContainer.classList.add('hidden');
+    }
+}
+
+/**
  * Display cache status information in the UI
  * @param {object} cacheInfo - Cache information from the backend
  */
@@ -247,6 +269,9 @@ function displayCacheStatus(cacheInfo) {
  */
 function renderResumes(resumes) {
     resultsTbody.innerHTML = ''; // Clear previous results
+
+    // Update the resume count tag
+    updateResumeCount(resumes.length);
 
     if (resumes.length === 0) {
         noResultsMessage.classList.remove('hidden');

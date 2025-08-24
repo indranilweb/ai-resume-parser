@@ -125,7 +125,7 @@ def get_vector_db_path(resumes_data: dict) -> str:
 def create_vector_database(resumes_data: dict, force_rebuild: bool = False) -> tuple:
     """Create FAISS vector database from resume content."""
     if not embedding_model:
-        return None, None
+        return None, None, False
     
     db_path = get_vector_db_path(resumes_data)
     
@@ -137,7 +137,7 @@ def create_vector_database(resumes_data: dict, force_rebuild: bool = False) -> t
             with open(f"{db_path}_metadata.pkl", 'rb') as f:
                 metadata = pickle.load(f)
             print(f"📂 Loaded existing vector database: {os.path.basename(db_path)}")
-            return index, metadata
+            return index, metadata, True  # True indicates cache hit
         except Exception as e:
             print(f"⚠️ Could not load existing vector DB: {e}")
     
@@ -163,7 +163,7 @@ def create_vector_database(resumes_data: dict, force_rebuild: bool = False) -> t
     
     if not texts:
         print("❌ No text content to vectorize")
-        return None, None
+        return None, None, False
     
     # Generate embeddings
     print(f"🔧 Generating embeddings for {len(texts)} text chunks...")
@@ -186,7 +186,7 @@ def create_vector_database(resumes_data: dict, force_rebuild: bool = False) -> t
     except Exception as e:
         print(f"⚠️ Could not save vector DB: {e}")
     
-    return index, metadata
+    return index, metadata, False  # False indicates new database created
 
 def split_text_into_chunks(text: str, chunk_size: int = 512, overlap: int = 50) -> list:
     """Split text into overlapping chunks for better semantic search."""
@@ -218,15 +218,10 @@ def semantic_search_resumes(required_skills: list, resumes_data: dict, top_k: in
         similarity_threshold = SIMILARITY_THRESHOLD
     
     # Create or load vector database
-    index, metadata = create_vector_database(resumes_data, force_analyze)
+    index, metadata, vector_cache_hit = create_vector_database(resumes_data, force_analyze)
     if not index or not metadata:
         print("❌ Could not create vector database - returning all resumes")
-        return resumes_data, vector_cache_hit
-    
-    # Check if we loaded from cache
-    db_path = get_vector_db_path(resumes_data)
-    if not force_analyze and os.path.exists(f"{db_path}.index"):
-        vector_cache_hit = True
+        return resumes_data, False
     
     # Create query from required skills
     skills_query = f"Required skills and experience: {', '.join(required_skills)}"
@@ -519,8 +514,10 @@ class ResumeParser:
         print(f"\n🚀 --- Gemini API Processing Phase ---")
         matched_candidates, gemini_cache_info = parse_resumes_batch(filtered_resumes, required_skills, force_analyze)
         
-        # Merge cache info
+        # Merge cache info (preserve vector_cache_hit)
+        vector_cache_hit_backup = cache_info["vector_cache_hit"]
         cache_info.update(gemini_cache_info)
+        cache_info["vector_cache_hit"] = vector_cache_hit_backup
 
         if matched_candidates:
             print(f"\n\n🎉 --- Found {len(matched_candidates)} Matched Candidate(s) ---")

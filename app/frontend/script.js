@@ -182,10 +182,9 @@ function createResumeTableRow(resume) {
             </td>
             <td class="px-4 py-3 text-center">
                 <div id="summary-icon" class="relative flex justify-center">
-                    <button class="p-1 text-gray-400 hover:text-blue-400 hover:bg-gray-900 rounded transition-colors cursor-pointer">
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
-                        </svg>
+                    <button class="flex items-center px-2 py-1 text-gray-400 hover:text-blue-400 hover:bg-gray-900 rounded transition-colors cursor-pointer">
+                        <i class="fas fa-arrow-up-right-from-square mr-2"></i>
+                        <span class="text-xs">View</span>
                     </button>
                     <div id="summary-text" class="hidden">
                         <p class="text-blue-400 text-base font-semibold mb-2">${resume.name || '—'}</p>
@@ -230,7 +229,7 @@ function displayCacheStatus(cacheInfo) {
 
     // Vector cache indicator
     const vectorCacheIcon = document.createElement('div');
-    vectorCacheIcon.className = `flex items-center space-x-2 px-2 py-1 rounded-md text-xs font-medium ${
+    vectorCacheIcon.className = `flex items-center space-x-2 px-2 py-1 rounded-2xl text-xs font-medium ${
         cacheInfo.vector_cache_hit 
             ? 'cache-hit' 
             : 'cache-miss'
@@ -245,7 +244,7 @@ function displayCacheStatus(cacheInfo) {
 
     // Gemini cache indicator
     const geminiCacheIcon = document.createElement('div');
-    geminiCacheIcon.className = `flex items-center space-x-2 px-2 py-1 rounded-md text-xs font-medium ${
+    geminiCacheIcon.className = `flex items-center space-x-2 px-2 py-1 rounded-2xl text-xs font-medium ${
         cacheInfo.gemini_cache_hit 
             ? 'cache-hit' 
             : 'cache-miss'

@@ -127,9 +127,14 @@
             
             <!-- Loading Indicator -->
             <div id="loading-indicator" class="hidden flex justify-center items-center py-12">
-                <div class="flex items-center space-x-3">
-                    <i class="fas fa-spinner fa-spin text-blue-400 text-lg"></i>
-                    <span class="text-gray-400 text-sm">Analyzing resumes...</span>
+                <div class="flex flex-col items-center space-y-3">
+                    <div class="flex items-center space-x-3">
+                        <i class="fas fa-spinner fa-spin text-blue-400 text-lg"></i>
+                        <span class="text-gray-400 text-sm">Analyzing resumes...</span>
+                    </div>
+                    <div id="loading-message" class="text-xs text-gray-500 max-w-md text-center">
+                        Processing resumes... Please wait.
+                    </div>
                 </div>
             </div>
 

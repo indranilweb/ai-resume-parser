@@ -44,6 +44,14 @@ async function parseResumesAPI(folderPath, skills, forceAnalyze = false) {
     // Hide the resume count while loading
     if (resumeCountContainer) resumeCountContainer.classList.add('hidden');
 
+    // Add loading message for large datasets
+    const loadingMessage = document.getElementById('loading-message');
+    if (loadingMessage) {
+        loadingMessage.textContent = forceAnalyze 
+            ? 'Force analyzing resumes... This may take a while for large datasets.' 
+            : 'Processing resumes... Please wait.';
+    }
+
     let finalResponse = [];
     let cacheInfo = null;
 
@@ -62,15 +70,29 @@ async function parseResumesAPI(folderPath, skills, forceAnalyze = false) {
 
         if (response.ok) {
             const data = await response.json();
-            finalResponse = data.result;
-            cacheInfo = data.cache_info;
+            
+            if (data.error) {
+                alert(`Error: ${data.error}`);
+                finalResponse = [];
+                cacheInfo = null;
+            } else {
+                finalResponse = data.result;
+                cacheInfo = data.cache_info;
+                
+                // Log performance info for large datasets
+                if (data.summary && data.summary.total_resumes_processed > 50) {
+                    console.log('📊 Performance Summary:', data.summary);
+                }
+            }
         } else {
-            alert('Failed to fetch results. Please try again.');
+            const errorData = await response.json().catch(() => ({}));
+            const errorMessage = errorData.error || 'Failed to fetch results. Please try again.';
+            alert(errorMessage);
             finalResponse = [];
         }
     } catch (error) {
         console.error('Error:', error);
-        alert('An error occurred. Please try again.');
+        alert('An error occurred. Please check your connection and try again.');
         finalResponse = [];
     }
 
@@ -258,13 +280,36 @@ function displayCacheStatus(cacheInfo) {
     `;
     cacheIndicators.appendChild(geminiCacheIcon);
 
-    // Processing info
+    // Batch processing indicator (if applicable)
+    if (cacheInfo.total_batches && cacheInfo.total_batches > 1) {
+        const batchIcon = document.createElement('div');
+        batchIcon.className = `flex items-center space-x-2 px-2 py-1 rounded-md text-xs font-medium ${
+            cacheInfo.batches_processed === cacheInfo.total_batches 
+                ? 'bg-green-600 bg-opacity-20 text-green-400' 
+                : 'bg-yellow-600 bg-opacity-20 text-yellow-400'
+        }`;
+        batchIcon.innerHTML = `
+            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"></path>
+            </svg>
+            <span>Batches: ${cacheInfo.batches_processed}/${cacheInfo.total_batches}</span>
+        `;
+        cacheIndicators.appendChild(batchIcon);
+    }
+
+    // Processing info with enhanced metrics
     let infoText = `${cacheInfo.total_resumes} resumes → ${cacheInfo.filtered_resumes} filtered`;
     if (cacheInfo.processing_time) {
         infoText += ` • ${cacheInfo.processing_time}s`;
+        
+        // Add throughput for large datasets
+        if (cacheInfo.total_resumes > 10) {
+            const throughput = (cacheInfo.total_resumes / cacheInfo.processing_time).toFixed(1);
+            infoText += ` (${throughput}/s)`;
+        }
     }
     if (cacheInfo.cache_key) {
-        infoText += ` • ${cacheInfo.cache_key}`;
+        infoText += ` • ${cacheInfo.cache_key.substring(0, 8)}...`;
     }
     
     processingInfo.textContent = infoText;

@@ -266,12 +266,13 @@ function displayCacheStatus(cacheInfo) {
 /**
  * Renders a list of resumes to the table or shows a 'no results' message.
  * @param {Array<object>} resumes - An array of resume objects to display.
+ * @param {number} totalCount - Total number of resumes in the folder.
  */
-function renderResumes(resumes) {
+function renderResumes(resumes, totalCount = null) {
     resultsTbody.innerHTML = ''; // Clear previous results
 
-    // Update the resume count tag
-    updateResumeCount(resumes.length);
+    // Update the resume count tag with total count if available, otherwise use filtered count
+    updateResumeCount(totalCount !== null ? totalCount : resumes.length);
 
     if (resumes.length === 0) {
         noResultsMessage.classList.remove('hidden');
@@ -365,7 +366,9 @@ async function performSearch(forceAnalyze = false) {
     try {
         const response = await parseResumesAPI(folderPath, skills, forceAnalyze);
         displayCacheStatus(response.cache_info);
-        renderResumes(response.result);
+        // Pass the total count from cache info to renderResumes
+        const totalCount = response.cache_info ? response.cache_info.total_resumes : null;
+        renderResumes(response.result, totalCount);
     } catch (error) {
         console.error('Failed to parse resumes:', error);
         loadingIndicator.classList.add('hidden');

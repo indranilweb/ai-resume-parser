@@ -382,7 +382,7 @@ def parse_resumes_batch(resumes_data: dict, required_skills: list[str], force_an
 
     # Check cache first (unless force analyze is requested)
     cache_key = generate_cache_key(resumes_data, required_skills)
-    cache_info["cache_key"] = cache_key[:12] + "..."
+    cache_info["cache_key"] = cache_key
     print(f"🔑 Generated cache key: {cache_key[:12]}...")
     
     cached_result = None

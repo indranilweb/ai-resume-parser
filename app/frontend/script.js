@@ -18,6 +18,11 @@ const cacheIndicators = document.getElementById('cache-indicators');
 const processingInfo = document.getElementById('processing-info');
 const resumeCountContainer = document.getElementById('resume-count');
 const resumeCountNum = document.getElementById('resume-count-num');
+const clearCurrentCacheBtn = document.getElementById('clear-current-cache-btn');
+const clearAllCacheBtn = document.getElementById('clear-all-cache-btn');
+
+// Global variable to store current cache key
+let currentCacheKey = null;
 
 // --- Functions ---
 /**
@@ -216,6 +221,9 @@ function displayCacheStatus(cacheInfo) {
         return;
     }
 
+    // Store current cache key globally for clearing current cache
+    currentCacheKey = cacheInfo.cache_key;
+
     // Clear previous content
     cacheIndicators.innerHTML = '';
     processingInfo.innerHTML = '';
@@ -256,7 +264,7 @@ function displayCacheStatus(cacheInfo) {
         infoText += ` • ${cacheInfo.processing_time}s`;
     }
     if (cacheInfo.cache_key) {
-        infoText += ` • ${cacheInfo.cache_key.substring(0, 8)}...`;
+        infoText += ` • ${cacheInfo.cache_key}`;
     }
     
     processingInfo.textContent = infoText;
@@ -283,6 +291,51 @@ function renderResumes(resumes, totalCount = null) {
         const rowsHtml = resumes.map(createResumeTableRow).join('');
         resultsTbody.innerHTML = rowsHtml;
         addSummaryIconsEventListeners(); // Ensure icons have event listeners
+    }
+}
+
+/**
+ * Clear cache via API call
+ * @param {string} cacheType - Type of cache to clear: "current" or "all"
+ * @param {string} cacheKey - Cache key for current cache (optional)
+ */
+async function clearCache(cacheType, cacheKey = null) {
+    try {
+        console.log(`Clearing ${cacheType} cache...`);
+        
+        const requestBody = { type: cacheType };
+        if (cacheKey) {
+            requestBody.cache_key = cacheKey;
+        }
+        
+        const response = await fetch('http://localhost:8000/clear-cache', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestBody),
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success) {
+                alert(`${data.message}`);
+                console.log(`✅ ${cacheType} cache cleared successfully`);
+                
+                // Hide cache status after clearing all cache
+                if (cacheType === 'all') {
+                    cacheStatus.classList.add('hidden');
+                }
+            } else {
+                alert(`Failed to clear cache: ${data.error}`);
+                console.error(`❌ Failed to clear ${cacheType} cache:`, data.error);
+            }
+        } else {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+    } catch (error) {
+        console.error(`❌ Error clearing ${cacheType} cache:`, error);
+        alert(`An error occurred while clearing ${cacheType} cache. Please check the console.`);
     }
 }
 
@@ -432,3 +485,28 @@ function addSummaryIconsEventListeners() {
         });
     });
 }
+
+// --- Cache Clearing Event Listeners ---
+
+/**
+ * Handle "Clear Current Cache" button click
+ */
+clearCurrentCacheBtn.addEventListener('click', async () => {
+    if (!currentCacheKey) {
+        alert('No current cache to clear. Please perform a search first.');
+        return;
+    }
+    
+    if (confirm('Are you sure you want to clear the current search cache? This will remove the cache for the current folder and query combination.')) {
+        await clearCache('current', currentCacheKey);
+    }
+});
+
+/**
+ * Handle "Clear All Cache" button click
+ */
+clearAllCacheBtn.addEventListener('click', async () => {
+    if (confirm('Are you sure you want to clear ALL cache? This will remove all cached data including both Gemini and Vector cache.')) {
+        await clearCache('all');
+    }
+});

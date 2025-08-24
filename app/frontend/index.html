@@ -22,7 +22,7 @@
             <!-- Header -->
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center space-x-3">
-                    <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                    <div class="w-8 h-8 bg-gradient-to-br from-blue-600 via-indigo-600 to-pink-500 rounded-lg flex items-center justify-center">
                         <i class="fas fa-file-text text-white text-sm"></i>
                     </div>
                     <h1 class="text-2xl font-semibold text-gray-100">
@@ -84,11 +84,11 @@
                             <span>Search</span>
                         </button>
                         <button id="force-analyze-btn" 
-                            class="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition-colors flex items-center space-x-2" 
+                            class="px-4 py-2 bg-amber-600 text-white text-sm font-medium rounded-md hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition-colors flex items-center space-x-2" 
                             title="Force fresh analysis, bypassing cache"
                             disabled>
                             <i class="fas fa-sync-alt"></i>
-                            <span>Analyze</span>
+                            <span>Force</span>
                         </button>
                     </div>
                 </div>
@@ -102,6 +102,21 @@
                     <div class="flex items-center space-x-3">
                         <div id="cache-indicators" class="flex space-x-2">
                             <!-- Cache indicators will be inserted here -->
+                        </div>
+                        <div class="flex items-center space-x-2 ml-4 pl-3 border-l border-gray-500">
+                            <div class="text-xs font-medium">Clear Cache:</div>
+                            <button id="clear-current-cache-btn" 
+                                class="px-3 py-1 bg-amber-600 text-white text-xs font-medium rounded-md hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition-colors flex items-center space-x-1" 
+                                title="Clear current search cache">
+                                <i class="fas fa-trash text-xs"></i>
+                                <span>Current</span>
+                            </button>
+                            <button id="clear-all-cache-btn" 
+                                class="px-3 py-1 bg-amber-600 text-white text-xs font-medium rounded-md hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition-colors flex items-center space-x-1" 
+                                title="Clear all cache">
+                                <i class="fas fa-trash-alt text-xs"></i>
+                                <span>All</span>
+                            </button>
                         </div>
                     </div>
                     <div id="processing-info" class="text-xs text-gray-400 font-mono">

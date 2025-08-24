@@ -9,6 +9,17 @@ GEMINI_KEY = "AIzaSyBpQYrI-P1cdXID3GJY16O0bhXQDuiuzBA" # os.getenv("GEMINI_KEY")
 # Add Gemini AI model name here
 GEMINI_MODEL = "gemini-2.5-flash"
 
+# Performance and Scalability Configuration
+# These settings help the application handle large datasets (1000+ resumes)
+PERFORMANCE_CONFIG = {
+    "MAX_RESUMES_PER_BATCH": 15,     # Max resumes in a single Gemini API call
+    "ENABLE_PARALLEL_READING": True, # Enable parallel file reading
+    "MAX_WORKERS": 4,                # Number of worker threads for file reading
+    "SIMILARITY_THRESHOLD": 0.3,     # Vector search similarity threshold
+    "BATCH_DELAY_SECONDS": 1,        # Delay between API batches to avoid rate limiting
+    "ENABLE_MEMORY_OPTIMIZATION": True, # Enable memory optimization for large datasets
+}
+
 PROMPT_V1 = """
     You are an expert HR recruitment assistant. Your task is to analyze a batch of resumes, identify candidates who match a specific set of skills, and then extract key information for ONLY the matched candidates in a strict JSON format.
 

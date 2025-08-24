@@ -56,6 +56,23 @@
                         <button id="search-btn" class="w-full sm:w-auto bg-violet-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-violet-400 transition duration-150 ease-in-out shadow-sm">
                             Search
                         </button>
+                        <button id="force-analyze-btn" class="w-full sm:w-auto bg-orange-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-400 transition duration-150 ease-in-out shadow-sm" title="Force fresh analysis, bypassing cache">
+                            Force Analyze
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Cache Status Indicator -->
+            <div id="cache-status" class="hidden bg-white bg-opacity-50 rounded-xl shadow-md p-4 mb-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <div id="cache-indicators" class="flex space-x-3">
+                            <!-- Cache indicators will be inserted here -->
+                        </div>
+                    </div>
+                    <div id="processing-info" class="text-sm text-gray-600">
+                        <!-- Processing info will be inserted here -->
                     </div>
                 </div>
             </div>

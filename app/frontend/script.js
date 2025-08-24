@@ -4,6 +4,7 @@ const folderPathInput = document.getElementById('folder-path');
 const folderInput = document.getElementById('folder-input');
 const searchInput = document.getElementById('search-input');
 const searchBtn = document.getElementById('search-btn');
+const forceAnalyzeBtn = document.getElementById('force-analyze-btn');
 const resultsTableContainer = document.getElementById('results-table-container');
 const resultsTbody = document.getElementById('results-tbody');
 const noResultsMessage = document.getElementById('no-results');
@@ -12,23 +13,29 @@ const summaryModal = document.getElementById('summary-modal');
 const summaryContent = document.getElementById('summary-content');
 const summaryCloseBtn = document.getElementById('summary-close-btn');
 const loadingIndicator = document.getElementById('loading-indicator');
+const cacheStatus = document.getElementById('cache-status');
+const cacheIndicators = document.getElementById('cache-indicators');
+const processingInfo = document.getElementById('processing-info');
 
 // --- Functions ---
 /**
  * Calls the backend API to parse resumes based on the provided folder path and skills.
  * @param {string} folderPath - The path of the folder to search.
  * @param {string} skills - Comma-separated skills to search for.
- * @returns {Promise<Array<object>>} - A promise that resolves with the parsed data.
+ * @param {boolean} forceAnalyze - Whether to force fresh analysis bypassing cache.
+ * @returns {Promise<Object>} - A promise that resolves with the parsed data and cache info.
  */
-async function parseResumesAPI(folderPath, skills) {
-    console.log(`API Call: Parsing resumes from '${folderPath}' for skills: '${skills}'`);
+async function parseResumesAPI(folderPath, skills, forceAnalyze = false) {
+    console.log(`API Call: Parsing resumes from '${folderPath}' for skills: '${skills}', force: ${forceAnalyze}`);
     
     // Show the loader while the API call is in progress
     loadingIndicator.classList.remove('hidden');
     resultsTableContainer.classList.add('hidden');
     noResultsMessage.classList.add('hidden');
+    cacheStatus.classList.add('hidden');
 
     let finalResponse = [];
+    let cacheInfo = null;
 
     try {
         const response = await fetch('http://localhost:8000/parse-resume', {
@@ -39,20 +46,14 @@ async function parseResumesAPI(folderPath, skills) {
             body: JSON.stringify({
                 dirPath: folderPath,
                 query: skills,
+                forceAnalyze: forceAnalyze,
             }),
         });
 
         if (response.ok) {
             const data = await response.json();
-            // Simulate filtering based on skills for a more realistic demo
-        //  const skillList = skills.toLowerCase().split(',').map(s => s.trim()).filter(Boolean);
-        //  const filteredResponse = skillList.length === 0 ? data.result : data.result.filter(resume => 
-        //      resume.top_5_technical_skills.some(skill => 
-        //          skillList.includes(skill.toLowerCase())
-        //      )
-        //  );
-        //  finalResponse = filteredResponse;
             finalResponse = data.result;
+            cacheInfo = data.cache_info;
         } else {
             alert('Failed to fetch results. Please try again.');
             finalResponse = [];
@@ -64,7 +65,7 @@ async function parseResumesAPI(folderPath, skills) {
     }
 
     loadingIndicator.classList.add('hidden'); // Hide loader
-    return finalResponse;
+    return { result: finalResponse, cache_info: cacheInfo };
 }
 
 /**
@@ -192,6 +193,63 @@ function createResumeTableRow(resume) {
 }
 
 /**
+ * Display cache status information in the UI
+ * @param {object} cacheInfo - Cache information from the backend
+ */
+function displayCacheStatus(cacheInfo) {
+    if (!cacheInfo) {
+        cacheStatus.classList.add('hidden');
+        return;
+    }
+
+    // Clear previous content
+    cacheIndicators.innerHTML = '';
+    processingInfo.innerHTML = '';
+
+    // Vector cache indicator
+    const vectorCacheIcon = document.createElement('div');
+    vectorCacheIcon.className = `flex items-center space-x-2 px-3 py-1 rounded-full text-sm font-medium ${
+        cacheInfo.vector_cache_hit 
+            ? 'bg-green-100 text-green-800' 
+            : 'bg-yellow-100 text-yellow-800'
+    }`;
+    vectorCacheIcon.innerHTML = `
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"></path>
+        </svg>
+        <span>Vector: ${cacheInfo.vector_cache_hit ? 'Cached' : 'Fresh'}</span>
+    `;
+    cacheIndicators.appendChild(vectorCacheIcon);
+
+    // Gemini cache indicator
+    const geminiCacheIcon = document.createElement('div');
+    geminiCacheIcon.className = `flex items-center space-x-2 px-3 py-1 rounded-full text-sm font-medium ${
+        cacheInfo.gemini_cache_hit 
+            ? 'bg-green-100 text-green-800' 
+            : 'bg-blue-100 text-blue-800'
+    }`;
+    geminiCacheIcon.innerHTML = `
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"></path>
+        </svg>
+        <span>Gemini: ${cacheInfo.gemini_cache_hit ? 'Cached' : 'Fresh'}</span>
+    `;
+    cacheIndicators.appendChild(geminiCacheIcon);
+
+    // Processing info
+    let infoText = `${cacheInfo.total_resumes} resumes → ${cacheInfo.filtered_resumes} filtered`;
+    if (cacheInfo.processing_time) {
+        infoText += ` • ${cacheInfo.processing_time}s`;
+    }
+    if (cacheInfo.cache_key) {
+        infoText += ` • Key: ${cacheInfo.cache_key}`;
+    }
+    
+    processingInfo.textContent = infoText;
+    cacheStatus.classList.remove('hidden');
+}
+
+/**
  * Renders a list of resumes to the table or shows a 'no results' message.
  * @param {Array<object>} resumes - An array of resume objects to display.
  */
@@ -238,9 +296,10 @@ if (files.length > 0) {
 });
 
 /**
- * Handle "Search" button click to initiate the API call and display results.
+ * Handle search with optional force analyze
+ * @param {boolean} forceAnalyze - Whether to force fresh analysis
  */
-searchBtn.addEventListener('click', async () => {
+async function performSearch(forceAnalyze = false) {
     const folderPath = folderPathInput.value;
     const skills = searchInput.value;
 
@@ -254,14 +313,28 @@ searchBtn.addEventListener('click', async () => {
     }
 
     try {
-        // const resumeData = await parseResumesAPIMock(folderPath, skills);
-        const resumeData = await parseResumesAPI(folderPath, skills);
-        renderResumes(resumeData);
+        const response = await parseResumesAPI(folderPath, skills, forceAnalyze);
+        displayCacheStatus(response.cache_info);
+        renderResumes(response.result);
     } catch (error) {
         console.error('Failed to parse resumes:', error);
         loadingIndicator.classList.add('hidden');
         alert('An error occurred while searching for resumes. Please check the console.');
     }
+}
+
+/**
+ * Handle "Search" button click to initiate the API call and display results.
+ */
+searchBtn.addEventListener('click', async () => {
+    await performSearch(false);
+});
+
+/**
+ * Handle "Force Analyze" button click to initiate fresh analysis.
+ */
+forceAnalyzeBtn.addEventListener('click', async () => {
+    await performSearch(true);
 });
 
 /**
@@ -269,7 +342,7 @@ searchBtn.addEventListener('click', async () => {
  */
 searchInput.addEventListener('keyup', (event) => {
     if (event.key === 'Enter') {
-        searchBtn.click();
+        performSearch(false);
     }
 });
 

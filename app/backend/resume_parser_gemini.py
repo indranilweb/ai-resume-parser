@@ -122,15 +122,15 @@ def get_vector_db_path(resumes_data: dict) -> str:
     db_hash = hashlib.md5(combined.encode('utf-8')).hexdigest()
     return os.path.join(VECTOR_DB_DIR, f"resume_db_{db_hash}")
 
-def create_vector_database(resumes_data: dict) -> tuple:
+def create_vector_database(resumes_data: dict, force_rebuild: bool = False) -> tuple:
     """Create FAISS vector database from resume content."""
     if not embedding_model:
         return None, None
     
     db_path = get_vector_db_path(resumes_data)
     
-    # Check if vector DB already exists
-    if os.path.exists(f"{db_path}.index") and os.path.exists(f"{db_path}_metadata.pkl"):
+    # Check if vector DB already exists (unless force rebuild is requested)
+    if not force_rebuild and os.path.exists(f"{db_path}.index") and os.path.exists(f"{db_path}_metadata.pkl"):
         try:
             # Load existing vector database
             index = faiss.read_index(f"{db_path}.index")
@@ -141,9 +141,12 @@ def create_vector_database(resumes_data: dict) -> tuple:
         except Exception as e:
             print(f"⚠️ Could not load existing vector DB: {e}")
     
-    # Create new vector database
-    print("🔧 Creating vector database from resumes...")
+    if force_rebuild:
+        print("🔥 Force rebuild requested - creating new vector database...")
+    else:
+        print("🔧 Creating vector database from resumes...")
     
+    # Create new vector database
     texts = []
     metadata = []
     
@@ -197,14 +200,16 @@ def split_text_into_chunks(text: str, chunk_size: int = 512, overlap: int = 50) 
     
     return chunks if chunks else [text]
 
-def semantic_search_resumes(required_skills: list, resumes_data: dict, top_k: int = None, similarity_threshold: float = None) -> dict:
+def semantic_search_resumes(required_skills: list, resumes_data: dict, top_k: int = None, similarity_threshold: float = None, force_analyze: bool = False) -> tuple[dict, bool]:
     """Perform semantic search to filter resumes based on required skills."""
+    vector_cache_hit = False
+    
     if not embedding_model:
         print("⚠️ Vector search disabled - returning all resumes")
-        return resumes_data
+        return resumes_data, vector_cache_hit
     
     if not required_skills or not resumes_data:
-        return resumes_data
+        return resumes_data, vector_cache_hit
     
     # Use global configuration if not specified
     if top_k is None:
@@ -213,10 +218,15 @@ def semantic_search_resumes(required_skills: list, resumes_data: dict, top_k: in
         similarity_threshold = SIMILARITY_THRESHOLD
     
     # Create or load vector database
-    index, metadata = create_vector_database(resumes_data)
+    index, metadata = create_vector_database(resumes_data, force_analyze)
     if not index or not metadata:
         print("❌ Could not create vector database - returning all resumes")
-        return resumes_data
+        return resumes_data, vector_cache_hit
+    
+    # Check if we loaded from cache
+    db_path = get_vector_db_path(resumes_data)
+    if not force_analyze and os.path.exists(f"{db_path}.index"):
+        vector_cache_hit = True
     
     # Create query from required skills
     skills_query = f"Required skills and experience: {', '.join(required_skills)}"
@@ -250,10 +260,10 @@ def semantic_search_resumes(required_skills: list, resumes_data: dict, top_k: in
     
     if filtered_resumes:
         print(f"🎯 Vector search filtered {len(resumes_data)} → {len(filtered_resumes)} resumes")
-        return filtered_resumes
+        return filtered_resumes, vector_cache_hit
     else:
         print(f"⚠️ No resumes met similarity threshold ({similarity_threshold}) - returning all resumes")
-        return resumes_data
+        return resumes_data, vector_cache_hit
 
 # --- Cache Management Functions ---
 
@@ -286,6 +296,22 @@ def get_cached_result(cache_key: str) -> list[dict]:
         except Exception as e:
             print(f"⚠️  Warning: Could not read cache file: {e}")
     return None
+
+def clear_cache(cache_key: str = None) -> None:
+    """Clear cache files. If cache_key is provided, clear specific cache, otherwise clear all."""
+    try:
+        if cache_key:
+            cache_file = os.path.join(CACHE_DIR, f"{cache_key}.json")
+            if os.path.exists(cache_file):
+                os.remove(cache_file)
+                print(f"🗑️ Cleared specific cache: {cache_key[:12]}...json")
+        else:
+            for file in os.listdir(CACHE_DIR):
+                if file.endswith('.json'):
+                    os.remove(os.path.join(CACHE_DIR, file))
+            print("🗑️ Cleared all cache files")
+    except Exception as e:
+        print(f"⚠️ Warning: Could not clear cache: {e}")
 
 def save_to_cache(cache_key: str, result: list[dict]) -> None:
     """Save result to cache."""
@@ -346,23 +372,44 @@ def construct_batch_prompt(resumes_data: dict, required_skills: list[str]) -> st
     print("📝 Constructed a batch prompt for the Gemini API.")
     return prompt
 
-def parse_resumes_batch(resumes_data: dict, required_skills: list[str]) -> list[dict]:
+def parse_resumes_batch(resumes_data: dict, required_skills: list[str], force_analyze: bool = False) -> tuple[list[dict], dict]:
     """Sends the combined resume text to the Gemini API for batch parsing and filtering."""
+    cache_info = {
+        "gemini_cache_hit": False,
+        "vector_cache_hit": False,
+        "cache_key": None,
+        "processing_time": None
+    }
+    
     if not resumes_data:
         print("❌ No resume content to process.")
-        return []
+        return [], cache_info
 
-    # Check cache first
+    # Check cache first (unless force analyze is requested)
     cache_key = generate_cache_key(resumes_data, required_skills)
+    cache_info["cache_key"] = cache_key[:12] + "..."
     print(f"🔑 Generated cache key: {cache_key[:12]}...")
-    cached_result = get_cached_result(cache_key)
     
-    if cached_result is not None:
+    cached_result = None
+    if not force_analyze:
+        cached_result = get_cached_result(cache_key)
+    else:
+        print("🔥 Force analyze requested - skipping cache check")
+    
+    if cached_result is not None and not force_analyze:
+        cache_info["gemini_cache_hit"] = True
         print("🎯 CACHE HIT: Found cached result! Skipping Gemini API call.")
         print(f"✅ Returning {len(cached_result)} cached candidate(s)")
-        return cached_result
+        return cached_result, cache_info
 
+    if force_analyze:
+        clear_cache(cache_key)
+    
     print("❌ CACHE MISS: No cached result found.")
+    
+    import time
+    start_time = time.time()
+    
     prompt = construct_batch_prompt(resumes_data, required_skills)
     print("🚀 GEMINI API: Connecting to process the batch... (This may take a moment)")
 
@@ -383,37 +430,51 @@ def parse_resumes_batch(resumes_data: dict, required_skills: list[str]) -> list[
         response_content = response.text
         parsed_data = json.loads(response_content)
         
+        processing_time = round(time.time() - start_time, 2)
+        cache_info["processing_time"] = processing_time
+        
         # Save to cache
         save_to_cache(cache_key, parsed_data)
         print("💾 CACHE SAVE: Result saved to cache for future use.")
-        print(f"✅ Gemini API returned {len(parsed_data)} candidate(s)")
+        print(f"✅ Gemini API returned {len(parsed_data)} candidate(s) in {processing_time}s")
         
-        return parsed_data
+        return parsed_data, cache_info
     except json.JSONDecodeError:
         print("\n🚨 Error: Failed to decode JSON from the API response.")
         print(f"Raw Gemini Response:\n---\n{response.text}\n---")
-        return []
+        return [], cache_info
     except Exception as e:
         print(f"\n🚨 An error occurred while communicating with the Gemini API: {e}")
         if 'response' in locals() and hasattr(response, 'text'):
             print(f"Raw Gemini Response:\n---\n{response.text}\n---")
-        return []
+        return [], cache_info
 
 # --- Main Application Logic (Modified for Batch Processing) ---
 class ResumeParser:
-    def main(self, dir_path: str, query_string: str) -> list[dict]:
+    def main(self, dir_path: str, query_string: str, force_analyze: bool = False) -> tuple[list[dict], dict]:
         """Main function to run the resume parser application."""
+        cache_info = {
+            "gemini_cache_hit": False,
+            "vector_cache_hit": False,
+            "cache_key": None,
+            "processing_time": None,
+            "total_resumes": 0,
+            "filtered_resumes": 0
+        }
+        
         print("🤖 --- AI-Powered Resume Parser (Vector + Batch Mode) ---")
+        if force_analyze:
+            print("🔥 FORCE ANALYZE MODE - Bypassing all caches")
         
         resume_dir = dir_path.strip()
         if not os.path.isdir(resume_dir):
             print(f"❌ Error: Directory '{resume_dir}' not found.")
-            return []
+            return [], cache_info
             
         skills_input = query_string.strip()
         if not skills_input:
             print("❌ Error: You must specify at least one skill.")
-            return []
+            return [], cache_info
         required_skills = [skill.strip() for skill in skills_input.split(',')]
 
         supported_extensions = ('.txt', '.pdf', '.docx', '.doc')
@@ -421,7 +482,7 @@ class ResumeParser:
 
         if not resume_files:
             print(f"❌ No supported resumes (.txt, .pdf, .docx) found in '{resume_dir}'.")
-            return []
+            return [], cache_info
 
         print(f"\n📂 Found {len(resume_files)} resume(s). Reading content...")
         
@@ -437,31 +498,38 @@ class ResumeParser:
 
         if not all_resumes_data:
             print("\n❌ Could not read any resume content. Exiting.")
-            return []
+            return [], cache_info
+
+        cache_info["total_resumes"] = len(all_resumes_data)
 
         # Perform semantic search to filter resumes before Gemini API call
         print(f"\n🔍 --- Semantic Filtering Phase ---")
-        filtered_resumes = semantic_search_resumes(required_skills, all_resumes_data)
+        filtered_resumes, vector_cache_hit = semantic_search_resumes(required_skills, all_resumes_data, force_analyze=force_analyze)
+        cache_info["vector_cache_hit"] = vector_cache_hit
+        cache_info["filtered_resumes"] = len(filtered_resumes)
         
         if not filtered_resumes:
             print("\n❌ --- No candidates found through semantic search. ---")
-            return []
+            return [], cache_info
         
         if len(filtered_resumes) < len(all_resumes_data):
             print(f"📊 Semantic search reduced API load: {len(all_resumes_data)} → {len(filtered_resumes)} resumes")
 
         # The single API call happens here with filtered resumes
         print(f"\n🚀 --- Gemini API Processing Phase ---")
-        matched_candidates = parse_resumes_batch(filtered_resumes, required_skills)
+        matched_candidates, gemini_cache_info = parse_resumes_batch(filtered_resumes, required_skills, force_analyze)
+        
+        # Merge cache info
+        cache_info.update(gemini_cache_info)
 
         if matched_candidates:
             print(f"\n\n🎉 --- Found {len(matched_candidates)} Matched Candidate(s) ---")
             # Pretty-print the final JSON output
             print(json.dumps(matched_candidates, indent=4))
-            return matched_candidates
+            return matched_candidates, cache_info
         else:
             print("\n❌ --- No candidates matched the required skills from the filtered resumes. ---")
-            return []
+            return [], cache_info
 
 # Example of how to run the class
 if __name__ == '__main__':
@@ -479,4 +547,5 @@ if __name__ == '__main__':
     
     # Run the main process
     # This will print the results to the console
-    parser.main(resume_directory, required_skills_query)
+    result, cache_info = parser.main(resume_directory, required_skills_query)
+    print(f"\nCache Info: {cache_info}")

@@ -22,9 +22,10 @@ async def parse_resume(request: Request):
     request_data = await request.json()
     directory_path = request_data.get("dirPath")
     query_string = request_data.get("query")
-    print(f"Received request to parse resumes in directory: {directory_path} with query: {query_string}")
+    force_analyze = request_data.get("forceAnalyze", False)
+    print(f"Received request to parse resumes in directory: {directory_path} with query: {query_string}, force: {force_analyze}")
     if not directory_path or not query_string:
         return {"error": "Both 'directory_path' and 'query_string' are required."}
     
-    result = agent.main(directory_path, query_string)
-    return {"result": result}
+    result, cache_info = agent.main(directory_path, query_string, force_analyze)
+    return {"result": result, "cache_info": cache_info}

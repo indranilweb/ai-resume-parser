@@ -20,9 +20,11 @@ const App: React.FC = () => {
   const [selectedResume, setSelectedResume] = useState<Resume | null>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isForceAnalyze, setIsForceAnalyze] = useState<boolean>(false);
+  const [hasSearched, setHasSearched] = useState<boolean>(false);
 
   const handleFolderPathChange = (path: string) => {
     setFolderPath(path);
+    setHasSearched(false);
   };
 
   const handleProceed = () => {
@@ -41,6 +43,7 @@ const App: React.FC = () => {
     setIsForceAnalyze(forceAnalyze);
     setResumes([]);
     setCacheInfo(null);
+    setHasSearched(true);
 
     try {
       const response = await ApiService.parseResumes(folderPath, skills, forceAnalyze);
@@ -160,6 +163,8 @@ const App: React.FC = () => {
             <ResumeTable
               resumes={resumes}
               onViewDetails={handleViewDetails}
+              hasSearched={hasSearched}
+              folderPath={folderPath}
             />
           )}
         </main>

@@ -6,16 +6,32 @@ import { getScoreBadgeClass, filterValidCompanies } from '../utils/resume';
 interface ResumeTableProps {
   resumes: Resume[];
   onViewDetails: (resume: Resume) => void;
+  hasSearched?: boolean;
+  folderPath?: string;
 }
 
-const ResumeTable: React.FC<ResumeTableProps> = ({ resumes, onViewDetails }) => {
+const ResumeTable: React.FC<ResumeTableProps> = ({ resumes, onViewDetails, hasSearched = false, folderPath = '' }) => {
   if (resumes.length === 0) {
     return (
       <div className="text-center border border-gray-700 rounded-lg bg-gray-800 py-12 px-6">
         <div className="flex flex-col items-center space-y-3">
           <Code className="text-gray-400 w-10 h-10" />
-          <h3 className="text-lg font-medium text-gray-100">No matching resumes found</h3>
-          <p className="text-gray-400">Try different skills or select another folder.</p>
+          {!hasSearched ? (
+            <>
+              <h3 className="text-lg font-medium text-gray-100">Ready to find candidates</h3>
+              <p className="text-gray-400">
+                {!folderPath ? 
+                  'Please select a resume folder and enter skills to search for matching candidates.' :
+                  'Enter skills to search for and click "Search Resumes" to find matching candidates.'
+                }
+              </p>
+            </>
+          ) : (
+            <>
+              <h3 className="text-lg font-medium text-gray-100">No matching resumes found</h3>
+              <p className="text-gray-400">Try different skills or select another folder.</p>
+            </>
+          )}
         </div>
       </div>
     );

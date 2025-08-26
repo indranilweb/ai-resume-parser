@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* GitHub Dark Mode Inspired Styling using standard colors */
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
@@ -23,19 +27,40 @@ body {
     background: #6b7280; /* gray-500 */
 }
 
-/* Enhanced loading spinner */
-.loader {
-    border: 3px solid #374151; /* gray-700 */
-    border-top: 3px solid #2563eb; /* blue-600 */
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    animation: spin 1s linear infinite;
+/* Resume details modal specific styling */
+.details-btn:hover {
+    transform: translateY(-1px);
 }
 
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+/* Modal scroll styling */
+.modal-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-scroll::-webkit-scrollbar-track {
+    background: #1f2937; /* gray-800 */
+}
+
+.modal-scroll::-webkit-scrollbar-thumb {
+    background: #4b5563; /* gray-600 */
+    border-radius: 3px;
+}
+
+.modal-scroll::-webkit-scrollbar-thumb:hover {
+    background: #6b7280; /* gray-500 */
+}
+
+/* Enhanced skill badge styling for modal */
+.skill-badge {
+    background-color: rgba(37, 99, 235, 0.15); /* blue-600 with opacity */
+    color: #60a5fa; /* blue-400 */
+    border: 1px solid rgba(37, 99, 235, 0.3);
+    transition: all 0.2s ease;
+}
+
+.skill-badge:hover {
+    background-color: rgba(37, 99, 235, 0.3);
+    transform: translateY(-1px);
 }
 
 /* Focus styles for better accessibility */
@@ -49,13 +74,6 @@ select:focus {
 /* Table hover effects */
 tbody tr:hover {
     background-color: rgba(255, 255, 255, 0.03);
-}
-
-/* Skill badge styling */
-.skill-badge {
-    background-color: rgba(37, 99, 235, 0.15); /* blue-600 with opacity */
-    color: #60a5fa; /* blue-400 */
-    border: 1px solid rgba(37, 99, 235, 0.3);
 }
 
 /* Cache status indicators */
@@ -86,26 +104,6 @@ button:active {
     transform: translateY(0);
 }
 
-/* Modal backdrop */
-.modal-backdrop {
-    backdrop-filter: blur(4px);
-}
-
-/* Prose styling for summary content */
-.prose h1, .prose h2, .prose h3 {
-    color: #f3f4f6; /* gray-100 */
-}
-
-.prose p {
-    color: #f3f4f6; /* gray-100 */
-    margin-bottom: 1rem;
-}
-
-.prose strong {
-    color: #f3f4f6; /* gray-100 */
-    font-weight: 600;
-}
-
 /* Company list styling */
 .company-list li {
     position: relative;
@@ -120,7 +118,6 @@ button:active {
 }
 
 /* Resume count tag styling */
-/* Subtle resume count text on the right of the header */
 #resume-count {
     transition: opacity 0.18s ease, transform 0.18s ease;
     opacity: 0.95;
@@ -132,6 +129,6 @@ button:active {
     to { opacity: 0.95; transform: translateX(0); }
 }
 
-#resume-count:not(.hidden) {
+.resume-count-animate {
     animation: subtleSlideIn 0.2s ease-out;
 }

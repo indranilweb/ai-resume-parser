@@ -1,1 +1,0 @@
-start "Frontend Server" cmd /C "cd /d .\app\frontend && python -m http.server 8080" & start "Backend Server" cmd /C "cd /d .\app\backend && uvicorn api_server:app --host 0.0.0.0 --port 8000 --reload"

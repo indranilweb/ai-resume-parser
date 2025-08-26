@@ -23,19 +23,47 @@ body {
     background: #6b7280; /* gray-500 */
 }
 
-/* Enhanced loading spinner */
-.loader {
-    border: 3px solid #374151; /* gray-700 */
-    border-top: 3px solid #2563eb; /* blue-600 */
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    animation: spin 1s linear infinite;
+/* Resume details modal specific styling */
+.details-btn:hover {
+    transform: translateY(-1px);
 }
 
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+/* Modal scroll styling */
+#resume-details-modal .overflow-y-auto::-webkit-scrollbar {
+    width: 6px;
+}
+
+#resume-details-modal .overflow-y-auto::-webkit-scrollbar-track {
+    background: #1f2937; /* gray-800 */
+}
+
+#resume-details-modal .overflow-y-auto::-webkit-scrollbar-thumb {
+    background: #4b5563; /* gray-600 */
+    border-radius: 3px;
+}
+
+#resume-details-modal .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+    background: #6b7280; /* gray-500 */
+}
+
+/* Enhanced skill badge styling for modal */
+#details-content .skill-badge {
+    background-color: rgba(37, 99, 235, 0.2); /* blue-600 with opacity */
+    color: #60a5fa; /* blue-400 */
+    border: 1px solid rgba(37, 99, 235, 0.4);
+    transition: all 0.2s ease;
+}
+
+#details-content .skill-badge:hover {
+    background-color: rgba(37, 99, 235, 0.3);
+    transform: translateY(-1px);
+}
+
+/* Grid responsive adjustments */
+@media (max-width: 1024px) {
+    #resume-details-modal .grid-cols-1.lg\\:grid-cols-2 {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* Focus styles for better accessibility */

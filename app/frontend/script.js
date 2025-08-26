@@ -9,9 +9,9 @@ const resultsTableContainer = document.getElementById('results-table-container')
 const resultsTbody = document.getElementById('results-tbody');
 const noResultsMessage = document.getElementById('no-results');
 const searchSection = document.getElementById('search-section');
-const summaryModal = document.getElementById('summary-modal');
-const summaryContent = document.getElementById('summary-content');
-const summaryCloseBtn = document.getElementById('summary-close-btn');
+const resumeDetailsModal = document.getElementById('resume-details-modal');
+const detailsContent = document.getElementById('details-content');
+const detailsCloseBtn = document.getElementById('details-close-btn');
 const loadingIndicator = document.getElementById('loading-indicator');
 const cacheStatus = document.getElementById('cache-status');
 const cacheIndicators = document.getElementById('cache-indicators');
@@ -201,6 +201,9 @@ function createResumeTableRow(resume) {
         scoreIcon = 'fas fa-times';
     }
 
+    // Prepare data for the details modal
+    const resumeDataJson = JSON.stringify(resume).replace(/"/g, '&quot;');
+
     return `
         <tr class="hover:bg-gray-50 hover:bg-opacity-5 transition-colors duration-150">
             <td class="px-4 py-3">
@@ -208,18 +211,6 @@ function createResumeTableRow(resume) {
             </td>
             <td class="px-4 py-3">
                 <span class="text-gray-400 text-sm font-mono">${resume.contact_number || '—'}</span>
-            </td>
-            <td class="px-4 py-3 text-center">
-                <div class="flex flex-col items-center space-y-1">
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${scoreClass} cursor-pointer score-badge" 
-                          title="${resume.score_breakdown || 'No breakdown available'}" 
-                          data-name="${resume.name}" 
-                          data-score="${score}" 
-                          data-breakdown="${resume.score_breakdown || ''}">
-                        <i class="${scoreIcon} mr-1"></i>
-                        ${score}%
-                    </span>
-                </div>
             </td>
             <td class="px-4 py-3">
                 <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-600 bg-opacity-20 text-blue-400">
@@ -237,15 +228,20 @@ function createResumeTableRow(resume) {
                 </div>
             </td>
             <td class="px-4 py-3 text-center">
-                <div id="summary-icon" class="relative flex justify-center">
-                    <button class="flex items-center px-2 py-1 text-gray-400 hover:text-blue-400 hover:bg-gray-900 rounded transition-colors cursor-pointer">
+                <div class="flex flex-col items-center space-y-1">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${scoreClass}">
+                        <i class="${scoreIcon} mr-1"></i>
+                        ${score}%
+                    </span>
+                </div>
+            </td>
+            <td class="px-4 py-3 text-center">
+                <div class="relative flex justify-center">
+                    <button class="details-btn flex items-center px-2 py-1 text-gray-400 hover:text-blue-400 hover:bg-gray-900 rounded transition-colors cursor-pointer"
+                            data-resume="${resumeDataJson}">
                         <i class="fas fa-arrow-up-right-from-square mr-2"></i>
                         <span class="text-xs">View</span>
                     </button>
-                    <div id="summary-text" class="hidden">
-                        <p class="text-blue-400 text-base font-semibold mb-2">${resume.name || '—'}</p>
-                        <p class="text-sm text-gray-100">${resume.summary || 'No summary available.'}</p>
-                    </div>
                 </div>
             </td>
         </tr>
@@ -350,16 +346,15 @@ function displayCacheStatus(cacheInfo) {
 }
 
 /**
- * Show score breakdown modal
- * @param {string} name - Candidate name
- * @param {number} score - Match score
- * @param {string} breakdown - Score breakdown explanation
+ * Show comprehensive resume details modal
+ * @param {object} resume - Complete resume data object
  */
-function showScoreBreakdown(name, score, breakdown) {
-    const modal = document.getElementById('summary-modal');
-    const content = document.getElementById('summary-content');
+function showResumeDetails(resume) {
+    const modal = resumeDetailsModal;
+    const content = detailsContent;
     
     // Color code the score
+    const score = resume.match_score || 0;
     let scoreColor = 'text-gray-400';
     if (score >= 80) scoreColor = 'text-green-400';
     else if (score >= 65) scoreColor = 'text-blue-400';
@@ -367,18 +362,99 @@ function showScoreBreakdown(name, score, breakdown) {
     else if (score >= 30) scoreColor = 'text-orange-400';
     else scoreColor = 'text-red-400';
     
+    // Format skills
+    const skillsHtml = (resume.top_5_technical_skills || [])
+        .map(skill => `<span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium skill-badge mr-2 mb-2">${skill}</span>`)
+        .join('');
+    
+    // Format companies
+    const companiesHtml = (resume.last_3_companies || [])
+        .filter(company => company && company.toLowerCase() !== 'null')
+        .map(company => `<li class="text-gray-100 text-sm mb-2 flex items-center"><div class="w-1.5 h-1.5 bg-blue-400 rounded-full mr-3"></div>${company}</li>`)
+        .join('') || '<li class="text-gray-400 text-sm">No company information available</li>';
+    
     content.innerHTML = `
-        <div class="text-center mb-4">
-            <h3 class="text-xl font-bold text-white mb-2">${name}</h3>
-            <div class="text-3xl font-bold ${scoreColor} mb-2">${score}%</div>
-            <div class="text-sm text-gray-400">Match Score</div>
+        <!-- Header Section -->
+        <div class="bg-gray-900 rounded-lg p-6 mb-6">
+            <div class="flex items-start justify-between">
+                <div>
+                    <h3 class="text-2xl font-bold text-white mb-2">${resume.name || 'Unknown'}</h3>
+                    <div class="flex items-center space-x-4 text-sm text-gray-300">
+                        <span class="flex items-center">
+                            <i class="fas fa-phone mr-2 text-blue-400"></i>
+                            ${resume.contact_number || 'Not provided'}
+                        </span>
+                        <span class="flex items-center">
+                            <i class="fas fa-file-alt mr-2 text-blue-400"></i>
+                            ${resume.source_file || 'Unknown file'}
+                        </span>
+                        <span class="flex items-center">
+                            <i class="fas fa-clock mr-2 text-blue-400"></i>
+                            ${resume.years_of_experience || 0} years experience
+                        </span>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <div class="text-4xl font-bold ${scoreColor} mb-1">${score}%</div>
+                    <div class="text-xs text-gray-400 uppercase tracking-wide">Match Score</div>
+                </div>
+            </div>
         </div>
-        <div class="bg-gray-900 rounded-lg p-4">
-            <h4 class="text-sm font-semibold text-gray-300 mb-2">Score Breakdown:</h4>
-            <p class="text-gray-100 text-sm leading-relaxed">${breakdown || 'No detailed breakdown available.'}</p>
-        </div>
-        <div class="mt-4 text-xs text-gray-400">
-            <strong>Scoring Criteria:</strong> Skill Relevance (40%), Experience (20%), Company Quality (15%), Project Complexity (15%), Education (10%)
+
+        <!-- Two Column Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Left Column -->
+            <div class="space-y-6">
+                <!-- Score Breakdown -->
+                <div class="bg-gray-900 rounded-lg p-4">
+                    <h4 class="text-sm font-semibold text-gray-300 mb-3 flex items-center">
+                        <i class="fas fa-chart-line mr-2 text-blue-400"></i>
+                        Score Breakdown
+                    </h4>
+                    <div class="bg-gray-800 rounded-md p-3">
+                        <p class="text-gray-100 text-sm leading-relaxed">${resume.score_breakdown || 'No detailed breakdown available.'}</p>
+                    </div>
+                    <div class="mt-3 text-xs text-gray-400 border-t border-gray-700 pt-3">
+                        <strong>Scoring Criteria:</strong> Skill Relevance (40%), Experience (20%), Company Quality (15%), Project Complexity (15%), Education (10%)
+                    </div>
+                </div>
+
+                <!-- Key Skills -->
+                <div class="bg-gray-900 rounded-lg p-4">
+                    <h4 class="text-sm font-semibold text-gray-300 mb-3 flex items-center">
+                        <i class="fas fa-code mr-2 text-blue-400"></i>
+                        Key Technical Skills
+                    </h4>
+                    <div class="flex flex-wrap">
+                        ${skillsHtml || '<span class="text-gray-400 text-sm">No skills information available</span>'}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="space-y-6">
+                <!-- Professional Summary -->
+                <div class="bg-gray-900 rounded-lg p-4">
+                    <h4 class="text-sm font-semibold text-gray-300 mb-3 flex items-center">
+                        <i class="fas fa-user-circle mr-2 text-blue-400"></i>
+                        Professional Summary
+                    </h4>
+                    <div class="bg-gray-800 rounded-md p-3">
+                        <p class="text-gray-100 text-sm leading-relaxed">${resume.summary || 'No summary available.'}</p>
+                    </div>
+                </div>
+
+                <!-- Past Organizations -->
+                <div class="bg-gray-900 rounded-lg p-4">
+                    <h4 class="text-sm font-semibold text-gray-300 mb-3 flex items-center">
+                        <i class="fas fa-building mr-2 text-blue-400"></i>
+                        Past Organizations
+                    </h4>
+                    <ul class="space-y-2">
+                        ${companiesHtml}
+                    </ul>
+                </div>
+            </div>
         </div>
     `;
     
@@ -412,7 +488,7 @@ function renderResumes(resumes, totalCount = null) {
         
         const rowsHtml = sortedResumes.map(createResumeTableRow).join('');
         resultsTbody.innerHTML = rowsHtml;
-        addSummaryIconsEventListeners(); // Ensure icons have event listeners
+        addDetailsEventListeners(); // Ensure details buttons have event listeners
     }
 }
 
@@ -577,45 +653,34 @@ searchInput.addEventListener('keyup', (event) => {
 /**
  * Add an event listener to the close button in the modal
  */
-summaryCloseBtn.addEventListener('click', () => {
-    summaryModal.classList.add('hidden');
+detailsCloseBtn.addEventListener('click', () => {
+    resumeDetailsModal.classList.add('hidden');
 });
 
-summaryModal.addEventListener('click', (event) => {
+resumeDetailsModal.addEventListener('click', (event) => {
     // Close the modal if the background is clicked
-    if (event.target === summaryModal) {
-        summaryModal.classList.add('hidden');
+    if (event.target === resumeDetailsModal) {
+        resumeDetailsModal.classList.add('hidden');
     }
 });
 
 /**
- * Add an event listener to the icon to pass the summary text to the modal
+ * Add event listeners for details buttons
  */
-function addSummaryIconsEventListeners() {
-    const summaryIcons = document.querySelectorAll('#summary-icon button');
-    summaryIcons.forEach((icon) => {
-        icon.addEventListener('click', (event) => {
-            console.log('Summary icon clicked:', event.target);
-            // Get the parent row and find the hidden summary text
-            const summaryText = event.target.closest('td').querySelector('#summary-text').innerHTML;
-
-            // Update the content of the separate div
-            summaryContent.innerHTML = summaryText;
-
-            // Show the modal
-            summaryModal.classList.remove('hidden');
-        });
-    });
-    
-    // Add event listeners for score badges
-    const scoreBadges = document.querySelectorAll('.score-badge');
-    scoreBadges.forEach((badge) => {
-        badge.addEventListener('click', (event) => {
-            const name = event.target.getAttribute('data-name') || event.target.closest('.score-badge').getAttribute('data-name');
-            const score = parseInt(event.target.getAttribute('data-score') || event.target.closest('.score-badge').getAttribute('data-score'));
-            const breakdown = event.target.getAttribute('data-breakdown') || event.target.closest('.score-badge').getAttribute('data-breakdown');
-            
-            showScoreBreakdown(name, score, breakdown);
+function addDetailsEventListeners() {
+    const detailsBtns = document.querySelectorAll('.details-btn');
+    detailsBtns.forEach((btn) => {
+        btn.addEventListener('click', (event) => {
+            console.log('Details button clicked:', event.target);
+            // Get the resume data from the button's data attribute
+            const resumeDataJson = event.target.closest('.details-btn').getAttribute('data-resume');
+            try {
+                const resumeData = JSON.parse(resumeDataJson.replace(/&quot;/g, '"'));
+                showResumeDetails(resumeData);
+            } catch (error) {
+                console.error('Error parsing resume data:', error);
+                alert('Unable to load resume details. Please try again.');
+            }
         });
     });
 }

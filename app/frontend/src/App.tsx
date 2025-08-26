@@ -25,6 +25,7 @@ const App: React.FC = () => {
   const handleFolderPathChange = (path: string) => {
     setFolderPath(path);
     setHasSearched(false);
+    setIsStep2Enabled(path.trim() !== '');
   };
 
   const handleProceed = () => {

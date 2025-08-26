@@ -179,6 +179,28 @@ function createResumeTableRow(resume) {
         .filter(company => company && company.toLowerCase() !== 'null')
         .map(company => `<li class="text-gray-100 text-xs mb-1">${company}</li>`).join('');
 
+    // Format match score with color coding
+    const score = resume.match_score || 0;
+    let scoreClass = 'bg-gray-600 text-gray-300';
+    let scoreIcon = 'fas fa-minus';
+    
+    if (score >= 80) {
+        scoreClass = 'bg-green-600 text-green-100';
+        scoreIcon = 'fas fa-star';
+    } else if (score >= 65) {
+        scoreClass = 'bg-blue-600 text-blue-100';
+        scoreIcon = 'fas fa-thumbs-up';
+    } else if (score >= 50) {
+        scoreClass = 'bg-yellow-600 text-yellow-100';
+        scoreIcon = 'fas fa-check';
+    } else if (score >= 30) {
+        scoreClass = 'bg-orange-600 text-orange-100';
+        scoreIcon = 'fas fa-exclamation';
+    } else {
+        scoreClass = 'bg-red-600 text-red-100';
+        scoreIcon = 'fas fa-times';
+    }
+
     return `
         <tr class="hover:bg-gray-50 hover:bg-opacity-5 transition-colors duration-150">
             <td class="px-4 py-3">
@@ -186,6 +208,18 @@ function createResumeTableRow(resume) {
             </td>
             <td class="px-4 py-3">
                 <span class="text-gray-400 text-sm font-mono">${resume.contact_number || '—'}</span>
+            </td>
+            <td class="px-4 py-3 text-center">
+                <div class="flex flex-col items-center space-y-1">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${scoreClass} cursor-pointer score-badge" 
+                          title="${resume.score_breakdown || 'No breakdown available'}" 
+                          data-name="${resume.name}" 
+                          data-score="${score}" 
+                          data-breakdown="${resume.score_breakdown || ''}">
+                        <i class="${scoreIcon} mr-1"></i>
+                        ${score}%
+                    </span>
+                </div>
             </td>
             <td class="px-4 py-3">
                 <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-600 bg-opacity-20 text-blue-400">
@@ -316,6 +350,42 @@ function displayCacheStatus(cacheInfo) {
 }
 
 /**
+ * Show score breakdown modal
+ * @param {string} name - Candidate name
+ * @param {number} score - Match score
+ * @param {string} breakdown - Score breakdown explanation
+ */
+function showScoreBreakdown(name, score, breakdown) {
+    const modal = document.getElementById('summary-modal');
+    const content = document.getElementById('summary-content');
+    
+    // Color code the score
+    let scoreColor = 'text-gray-400';
+    if (score >= 80) scoreColor = 'text-green-400';
+    else if (score >= 65) scoreColor = 'text-blue-400';
+    else if (score >= 50) scoreColor = 'text-yellow-400';
+    else if (score >= 30) scoreColor = 'text-orange-400';
+    else scoreColor = 'text-red-400';
+    
+    content.innerHTML = `
+        <div class="text-center mb-4">
+            <h3 class="text-xl font-bold text-white mb-2">${name}</h3>
+            <div class="text-3xl font-bold ${scoreColor} mb-2">${score}%</div>
+            <div class="text-sm text-gray-400">Match Score</div>
+        </div>
+        <div class="bg-gray-900 rounded-lg p-4">
+            <h4 class="text-sm font-semibold text-gray-300 mb-2">Score Breakdown:</h4>
+            <p class="text-gray-100 text-sm leading-relaxed">${breakdown || 'No detailed breakdown available.'}</p>
+        </div>
+        <div class="mt-4 text-xs text-gray-400">
+            <strong>Scoring Criteria:</strong> Skill Relevance (40%), Experience (20%), Company Quality (15%), Project Complexity (15%), Education (10%)
+        </div>
+    `;
+    
+    modal.classList.remove('hidden');
+}
+
+/**
  * Renders a list of resumes to the table or shows a 'no results' message.
  * @param {Array<object>} resumes - An array of resume objects to display.
  * @param {number} totalCount - Total number of resumes in the folder.
@@ -332,7 +402,15 @@ function renderResumes(resumes, totalCount = null) {
     } else {
         noResultsMessage.classList.add('hidden');
         resultsTableContainer.classList.remove('hidden');
-        const rowsHtml = resumes.map(createResumeTableRow).join('');
+        
+        // Sort resumes by match_score in descending order if score is available
+        const sortedResumes = [...resumes].sort((a, b) => {
+            const scoreA = a.match_score || 0;
+            const scoreB = b.match_score || 0;
+            return scoreB - scoreA; // Descending order (highest score first)
+        });
+        
+        const rowsHtml = sortedResumes.map(createResumeTableRow).join('');
         resultsTbody.innerHTML = rowsHtml;
         addSummaryIconsEventListeners(); // Ensure icons have event listeners
     }
@@ -526,6 +604,18 @@ function addSummaryIconsEventListeners() {
 
             // Show the modal
             summaryModal.classList.remove('hidden');
+        });
+    });
+    
+    // Add event listeners for score badges
+    const scoreBadges = document.querySelectorAll('.score-badge');
+    scoreBadges.forEach((badge) => {
+        badge.addEventListener('click', (event) => {
+            const name = event.target.getAttribute('data-name') || event.target.closest('.score-badge').getAttribute('data-name');
+            const score = parseInt(event.target.getAttribute('data-score') || event.target.closest('.score-badge').getAttribute('data-score'));
+            const breakdown = event.target.getAttribute('data-breakdown') || event.target.closest('.score-badge').getAttribute('data-breakdown');
+            
+            showScoreBreakdown(name, score, breakdown);
         });
     });
 }

@@ -1,0 +1,1 @@
+start "Frontend Server" cmd /C "cd /d .\app\frontend && npm run dev" & start "Backend Server" cmd /C "cd /d .\app\backend && uvicorn api_server:app --host 0.0.0.0 --port 8000 --reload"

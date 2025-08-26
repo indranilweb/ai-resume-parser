@@ -357,7 +357,9 @@ def construct_batch_prompt(resumes_data: dict, required_skills: list[str]) -> st
         * "last_3_companies": (Array of Strings) A list of the last 3 companies the candidate worked for, starting with the most recent. Crucially, include only official company names. Exclude project names, client names, or internal divisions within a company. If fewer than 3 companies are clearly stated, include only all available.
         * "top_5_technical_skills": (Array of Strings) A list of up to 5 technical skills explicitly mentioned in the resume that are most directly relevant to the {skills_string} and/or are highly prominent in the candidate's experience.
         * "years_of_experience": (Number) The total calculated professional work experience in years. Calculate this based on the start and end dates of all full-time work experiences listed. Round it to the nearest whole number
-        * "summary": (String) A concise summary of the candidate's professional background and expertise, and most significant achievements. This must be no more than 100 words.
+        * "match_score": (Number) An intelligent match score from 0-100 based on how well the candidate matches the required skills "{skills_string}". Consider: skill relevance (40%), years of experience (20%), company quality/reputation (15%), project complexity (15%), and educational background (10%). Provide only the numeric score.
+        * "score_breakdown": (String) A brief explanation (max 50 words) of why this score was assigned, highlighting the key strengths that contributed to the score.
+        * "summary": (String) A concise summary of the candidate's professional background and expertise, and most significant achievements. This must be no more than 200 words.
 
     **Output Format:**
     Your output MUST be a single, valid JSON array `[]` containing one JSON object for each matched candidate. If no candidates match the required skills, you MUST return an empty array `[]`.

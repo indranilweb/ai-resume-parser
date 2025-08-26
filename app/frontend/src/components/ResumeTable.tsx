@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Phone, Clock, Building, Code, TrendingUp, ExternalLink } from 'lucide-react';
+import { User, Phone, Clock, Building, Code, TrendingUp, Info, ExternalLink } from 'lucide-react';
 import { Resume } from '../types';
 import { getScoreBadgeClass, filterValidCompanies } from '../utils/resume';
 
@@ -29,43 +29,43 @@ const ResumeTable: React.FC<ResumeTableProps> = ({ resumes, onViewDetails }) => 
             <tr>
               <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                 <div className="flex items-center">
-                  <User className="w-3 h-3 mr-2" />
+                  <User className="w-3.5 h-3.5 mr-2" />
                   Name
                 </div>
               </th>
               <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                 <div className="flex items-center">
-                  <Phone className="w-3 h-3 mr-2" />
+                  <Phone className="w-3.5 h-3.5 mr-2" />
                   Contact
                 </div>
               </th>
               <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                 <div className="flex items-center">
-                  <Clock className="w-3 h-3 mr-2" />
+                  <Clock className="w-3.5 h-3.5 mr-2" />
                   Exp
                 </div>
               </th>
               <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                 <div className="flex items-center">
-                  <Building className="w-3 h-3 mr-2" />
+                  <Building className="w-3.5 h-3.5 mr-2" />
                   Companies
                 </div>
               </th>
               <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                 <div className="flex items-center">
-                  <Code className="w-3 h-3 mr-2" />
+                  <Code className="w-3.5 h-3.5 mr-2" />
                   Key Skills
                 </div>
               </th>
               <th scope="col" className="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">
                 <div className="flex items-center justify-center">
-                  <TrendingUp className="w-3 h-3 mr-2" />
+                  <TrendingUp className="w-3.5 h-3.5 mr-2" />
                   Score
                 </div>
               </th>
               <th scope="col" className="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">
                 <div className="flex items-center justify-center">
-                  <ExternalLink className="w-3 h-3 mr-2" />
+                  <Info className="w-3.5 h-3.5 mr-2" />
                   Details
                 </div>
               </th>
@@ -148,8 +148,8 @@ const ResumeTableRow: React.FC<ResumeTableRowProps> = ({ resume, onViewDetails }
             onClick={() => onViewDetails(resume)}
             className="details-btn flex items-center px-2 py-1 text-gray-400 hover:text-blue-400 hover:bg-gray-900 rounded transition-colors cursor-pointer"
           >
-            <ExternalLink className="w-3 h-3 mr-2" />
-            <span className="text-xs">View</span>
+            <ExternalLink className="w-5 h-5 mr-2" />
+            <span className="text-xs font-medium">View</span>
           </button>
         </div>
       </td>

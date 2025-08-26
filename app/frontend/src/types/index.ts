@@ -17,6 +17,8 @@ export interface CacheInfo {
   total_resumes: number;
   filtered_resumes: number;
   processing_time?: number;
+  total_batches?: number;
+  batches_processed?: number;
 }
 
 export interface ParseResumeResponse {

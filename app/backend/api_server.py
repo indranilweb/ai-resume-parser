@@ -25,12 +25,36 @@ async def parse_resume(request: Request):
     directory_path = request_data.get("dirPath")
     query_string = request_data.get("query")
     force_analyze = request_data.get("forceAnalyze", False)
-    print(f"Received request to parse resumes in directory: {directory_path} with query: {query_string}, force: {force_analyze}")
+    
+    print(f"📨 Received request to parse resumes in directory: {directory_path}")
+    print(f"🔍 Query: {query_string}")
+    print(f"🔥 Force analyze: {force_analyze}")
+    
     if not directory_path or not query_string:
         return {"error": "Both 'directory_path' and 'query_string' are required."}
     
-    result, cache_info = agent.main(directory_path, query_string, force_analyze)
-    return {"result": result, "cache_info": cache_info}
+    try:
+        result, cache_info = agent.main(directory_path, query_string, force_analyze)
+        
+        # Enhanced response with performance metrics
+        response_data = {
+            "result": result, 
+            "cache_info": cache_info,
+            "summary": {
+                "total_candidates": len(result),
+                "total_resumes_processed": cache_info.get("total_resumes", 0),
+                "resumes_after_filtering": cache_info.get("filtered_resumes", 0),
+                "processing_time": cache_info.get("processing_time", 0),
+                "used_cache": cache_info.get("gemini_cache_hit", False) or cache_info.get("vector_cache_hit", False)
+            }
+        }
+        
+        print(f"✅ Request completed: {len(result)} candidates found")
+        return response_data
+        
+    except Exception as e:
+        print(f"❌ Error processing request: {e}")
+        return {"error": f"An error occurred while processing the request: {str(e)}"}
 
 @app.post("/clear-cache")
 async def clear_cache_endpoint(request: Request):

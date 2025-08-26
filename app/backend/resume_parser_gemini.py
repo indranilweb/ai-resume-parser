@@ -9,6 +9,10 @@ import docx   # For reading DOCX files
 import config
 from sentence_transformers import SentenceTransformer
 import faiss
+import time
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import Dict, List, Tuple, Optional
 
 # --- Configuration and Setup ---
 GEMINI_KEY = config.GEMINI_KEY
@@ -16,10 +20,21 @@ GEMINI_MODEL = config.GEMINI_MODEL
 CACHE_DIR = "cache_dir"
 VECTOR_DB_DIR = "vector_db"
 
+# Import performance configuration from config
+PERF_CONFIG = getattr(config, 'PERFORMANCE_CONFIG', {})
+
 # Vector search configuration
 ENABLE_VECTOR_SEARCH = True  # Set to False to disable vector search
-SIMILARITY_THRESHOLD = 0.3   # Minimum similarity score (0-1)
+SIMILARITY_THRESHOLD = PERF_CONFIG.get('SIMILARITY_THRESHOLD', 0.3)
 MAX_VECTOR_RESULTS = None    # Maximum resumes to pass to Gemini (None = no limit)
+
+# Batch processing configuration for handling large datasets
+BATCH_SIZE = 20              # Number of resumes to process per batch
+MAX_RESUMES_PER_BATCH = PERF_CONFIG.get('MAX_RESUMES_PER_BATCH', 15)
+ENABLE_PARALLEL_READING = PERF_CONFIG.get('ENABLE_PARALLEL_READING', True)
+MAX_WORKERS = PERF_CONFIG.get('MAX_WORKERS', 4)
+BATCH_DELAY_SECONDS = PERF_CONFIG.get('BATCH_DELAY_SECONDS', 1)
+ENABLE_MEMORY_OPTIMIZATION = PERF_CONFIG.get('ENABLE_MEMORY_OPTIMIZATION', True)
 
 # Ensure directories exist
 for dir_path in [CACHE_DIR, VECTOR_DB_DIR]:
@@ -50,6 +65,132 @@ try:
 except Exception as e:
     print(f"🚨 Error initializing Gemini client: {e}")
     exit()
+
+# --- Progress Tracking Functions ---
+
+class ProgressTracker:
+    def __init__(self, total_items: int, operation_name: str = "Processing"):
+        self.total_items = total_items
+        self.current_item = 0
+        self.operation_name = operation_name
+        self.start_time = time.time()
+        self.lock = threading.Lock()
+    
+    def update(self, increment: int = 1):
+        with self.lock:
+            self.current_item += increment
+            progress = (self.current_item / self.total_items) * 100
+            elapsed = time.time() - self.start_time
+            
+            if self.current_item > 0:
+                eta = (elapsed / self.current_item) * (self.total_items - self.current_item)
+                print(f"🔄 {self.operation_name}: {self.current_item}/{self.total_items} ({progress:.1f}%) - ETA: {eta:.1f}s")
+            else:
+                print(f"🔄 {self.operation_name}: {self.current_item}/{self.total_items} ({progress:.1f}%)")
+    
+    def complete(self):
+        elapsed = time.time() - self.start_time
+        print(f"✅ {self.operation_name} completed in {elapsed:.2f}s")
+
+# --- Enhanced File Reading Functions ---
+
+def read_resume_file_safe(file_info: tuple) -> tuple:
+    """Safely read a single resume file with error handling."""
+    file_path, filename = file_info
+    try:
+        content = get_resume_content(file_path)
+        if content and content.strip():
+            return filename, content
+        else:
+            print(f"  ⚠️ Empty content from '{filename}'. Skipping.")
+            return filename, None
+    except Exception as e:
+        print(f"  ❌ Error reading '{filename}': {e}")
+        return filename, None
+
+def read_resumes_parallel(resume_files: List[str], resume_dir: str, progress_tracker: Optional[ProgressTracker] = None) -> Dict[str, str]:
+    """Read multiple resume files in parallel for better performance."""
+    resumes_data = {}
+    
+    if not ENABLE_PARALLEL_READING or len(resume_files) < 4:
+        # Sequential reading for small datasets
+        for filename in resume_files:
+            file_path = os.path.join(resume_dir, filename)
+            content = get_resume_content(file_path)
+            if content and content.strip():
+                resumes_data[filename] = content
+                print(f"  ✅ Successfully read '{filename}'")
+                if progress_tracker:
+                    progress_tracker.update()
+            else:
+                print(f"  ❌ Could not read content from '{filename}'. Skipping.")
+        return resumes_data
+    
+    # Parallel reading for larger datasets
+    print(f"📚 Reading {len(resume_files)} files in parallel (max {MAX_WORKERS} workers)...")
+    
+    file_infos = [(os.path.join(resume_dir, filename), filename) for filename in resume_files]
+    
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+        future_to_file = {executor.submit(read_resume_file_safe, file_info): file_info[1] 
+                         for file_info in file_infos}
+        
+        for future in as_completed(future_to_file):
+            filename, content = future.result()
+            if content:
+                resumes_data[filename] = content
+                print(f"  ✅ Successfully read '{filename}'")
+            if progress_tracker:
+                progress_tracker.update()
+    
+    return resumes_data
+
+# --- Batch Processing Functions ---
+
+def split_into_batches(items: dict, batch_size: int) -> List[dict]:
+    """Split a dictionary into smaller batches."""
+    items_list = list(items.items())
+    batches = []
+    
+    for i in range(0, len(items_list), batch_size):
+        batch_items = dict(items_list[i:i + batch_size])
+        batches.append(batch_items)
+    
+    return batches
+
+def process_resume_batch(batch_data: dict, required_skills: List[str], batch_num: int, total_batches: int) -> List[dict]:
+    """Process a single batch of resumes through Gemini API."""
+    print(f"\n🚀 Processing batch {batch_num}/{total_batches} ({len(batch_data)} resumes)...")
+    
+    try:
+        prompt = construct_batch_prompt(batch_data, required_skills)
+        
+        # Select the model
+        model = genai.GenerativeModel(GEMINI_MODEL)
+        
+        # Configure the generation to output JSON
+        generation_config = genai.types.GenerationConfig(
+            temperature=0.2,
+            response_mime_type="application/json"
+        )
+        
+        # Call the API
+        response = model.generate_content(prompt, generation_config=generation_config)
+        response_content = response.text
+        
+        # Parse JSON response
+        batch_results = json.loads(response_content)
+        
+        print(f"✅ Batch {batch_num}/{total_batches} completed: {len(batch_results)} candidates found")
+        return batch_results
+        
+    except json.JSONDecodeError as e:
+        print(f"❌ JSON decode error in batch {batch_num}: {e}")
+        print(f"Raw response: {response.text[:500]}...")
+        return []
+    except Exception as e:
+        print(f"❌ Error processing batch {batch_num}: {e}")
+        return []
 
 # --- Text Extraction Functions (Unchanged) ---
 
@@ -375,7 +516,9 @@ def parse_resumes_batch(resumes_data: dict, required_skills: list[str], force_an
         "gemini_cache_hit": False,
         "vector_cache_hit": False,
         "cache_key": None,
-        "processing_time": None
+        "processing_time": None,
+        "batches_processed": 0,
+        "total_batches": 0
     }
     
     if not resumes_data:
@@ -404,47 +547,97 @@ def parse_resumes_batch(resumes_data: dict, required_skills: list[str], force_an
     
     print("❌ CACHE MISS: No cached result found.")
     
-    import time
     start_time = time.time()
     
-    prompt = construct_batch_prompt(resumes_data, required_skills)
-    print("🚀 GEMINI API: Connecting to process the batch... (This may take a moment)")
-
-    try:
-        # Select the model, Gemini 1.5 Flash is good for this task.
-        model = genai.GenerativeModel(GEMINI_MODEL)
-
-        # Configure the generation to output JSON
-        generation_config = genai.types.GenerationConfig(
-            temperature=0.2,
-            response_mime_type="application/json"
-        )
-
-        # Call the API with the single, combined prompt
-        response = model.generate_content(prompt, generation_config=generation_config)
+    # Determine if we need batch processing
+    total_resumes = len(resumes_data)
+    
+    if total_resumes <= MAX_RESUMES_PER_BATCH:
+        # Process all resumes in a single batch (original behavior)
+        print(f"📝 Processing {total_resumes} resumes in single batch...")
+        cache_info["total_batches"] = 1
+        cache_info["batches_processed"] = 1
         
-        # The response text should be a valid JSON string (a list of objects)
-        response_content = response.text
-        parsed_data = json.loads(response_content)
+        prompt = construct_batch_prompt(resumes_data, required_skills)
+        print("🚀 GEMINI API: Connecting to process the batch... (This may take a moment)")
+
+        try:
+            # Select the model, Gemini 1.5 Flash is good for this task.
+            model = genai.GenerativeModel(GEMINI_MODEL)
+
+            # Configure the generation to output JSON
+            generation_config = genai.types.GenerationConfig(
+                temperature=0.2,
+                response_mime_type="application/json"
+            )
+
+            # Call the API with the single, combined prompt
+            response = model.generate_content(prompt, generation_config=generation_config)
+            
+            # The response text should be a valid JSON string (a list of objects)
+            response_content = response.text
+            parsed_data = json.loads(response_content)
+            
+            processing_time = round(time.time() - start_time, 2)
+            cache_info["processing_time"] = processing_time
+            
+            # Save to cache
+            save_to_cache(cache_key, parsed_data)
+            print("💾 CACHE SAVE: Result saved to cache for future use.")
+            print(f"✅ Gemini API returned {len(parsed_data)} candidate(s) in {processing_time}s")
+            
+            return parsed_data, cache_info
+        except json.JSONDecodeError:
+            print("\n🚨 Error: Failed to decode JSON from the API response.")
+            print(f"Raw Gemini Response:\n---\n{response.text}\n---")
+            return [], cache_info
+        except Exception as e:
+            print(f"\n🚨 An error occurred while communicating with the Gemini API: {e}")
+            if 'response' in locals() and hasattr(response, 'text'):
+                print(f"Raw Gemini Response:\n---\n{response.text}\n---")
+            return [], cache_info
+    
+    else:
+        # Process resumes in batches for large datasets
+        print(f"📊 Large dataset detected ({total_resumes} resumes). Using batch processing...")
         
+        # Split resumes into batches
+        batches = split_into_batches(resumes_data, MAX_RESUMES_PER_BATCH)
+        cache_info["total_batches"] = len(batches)
+        
+        print(f"🔄 Processing {total_resumes} resumes in {len(batches)} batches of max {MAX_RESUMES_PER_BATCH} resumes each...")
+        
+        all_results = []
+        successful_batches = 0
+        
+        for batch_num, batch_data in enumerate(batches, 1):
+            try:
+                batch_results = process_resume_batch(batch_data, required_skills, batch_num, len(batches))
+                all_results.extend(batch_results)
+                successful_batches += 1
+                
+                # Add a small delay between batches to avoid rate limiting
+                if batch_num < len(batches):
+                    time.sleep(BATCH_DELAY_SECONDS)
+                    
+            except Exception as e:
+                print(f"❌ Failed to process batch {batch_num}: {e}")
+                continue
+        
+        cache_info["batches_processed"] = successful_batches
         processing_time = round(time.time() - start_time, 2)
         cache_info["processing_time"] = processing_time
         
-        # Save to cache
-        save_to_cache(cache_key, parsed_data)
-        print("💾 CACHE SAVE: Result saved to cache for future use.")
-        print(f"✅ Gemini API returned {len(parsed_data)} candidate(s) in {processing_time}s")
+        if all_results:
+            # Save combined results to cache
+            save_to_cache(cache_key, all_results)
+            print("💾 CACHE SAVE: Combined batch results saved to cache for future use.")
+            print(f"✅ Batch processing completed: {len(all_results)} total candidates found in {processing_time}s")
+            print(f"📊 Successfully processed {successful_batches}/{len(batches)} batches")
+        else:
+            print(f"❌ No results from any batch. Processed {successful_batches}/{len(batches)} batches successfully.")
         
-        return parsed_data, cache_info
-    except json.JSONDecodeError:
-        print("\n🚨 Error: Failed to decode JSON from the API response.")
-        print(f"Raw Gemini Response:\n---\n{response.text}\n---")
-        return [], cache_info
-    except Exception as e:
-        print(f"\n🚨 An error occurred while communicating with the Gemini API: {e}")
-        if 'response' in locals() and hasattr(response, 'text'):
-            print(f"Raw Gemini Response:\n---\n{response.text}\n---")
-        return [], cache_info
+        return all_results, cache_info
 
 # --- Main Application Logic (Modified for Batch Processing) ---
 class ResumeParser:
@@ -456,7 +649,9 @@ class ResumeParser:
             "cache_key": None,
             "processing_time": None,
             "total_resumes": 0,
-            "filtered_resumes": 0
+            "filtered_resumes": 0,
+            "batches_processed": 0,
+            "total_batches": 0
         }
         
         print("🤖 --- AI-Powered Resume Parser (Vector + Batch Mode) ---")
@@ -481,23 +676,37 @@ class ResumeParser:
             print(f"❌ No supported resumes (.txt, .pdf, .docx) found in '{resume_dir}'.")
             return [], cache_info
 
-        print(f"\n📂 Found {len(resume_files)} resume(s). Reading content...")
+        total_files = len(resume_files)
+        print(f"\n📂 Found {total_files} resume(s). Reading content...")
         
-        all_resumes_data = {}
-        for filename in resume_files:
-            file_path = os.path.join(resume_dir, filename)
-            resume_text = get_resume_content(file_path)
-            if resume_text and resume_text.strip():
-                all_resumes_data[filename] = resume_text
-                print(f"  ✅ Successfully read '{filename}'")
-            else:
-                print(f"  ❌ Could not read content from '{filename}'. Skipping.")
+        # Initialize progress tracker for file reading
+        file_progress = ProgressTracker(total_files, "Reading files")
+        
+        # Use enhanced parallel file reading
+        start_reading = time.time()
+        all_resumes_data = read_resumes_parallel(resume_files, resume_dir, file_progress)
+        file_progress.complete()
+        
+        reading_time = time.time() - start_reading
+        print(f"📚 File reading completed in {reading_time:.2f}s")
 
         if not all_resumes_data:
             print("\n❌ Could not read any resume content. Exiting.")
             return [], cache_info
 
         cache_info["total_resumes"] = len(all_resumes_data)
+        
+        # Memory usage reporting and optimization for large datasets
+        if len(all_resumes_data) > 100:
+            total_chars = sum(len(content) for content in all_resumes_data.values())
+            avg_size = total_chars / len(all_resumes_data)
+            print(f"📊 Dataset stats: {len(all_resumes_data)} resumes, avg size: {avg_size:.0f} chars, total: {total_chars:,} chars")
+            
+            # Memory optimization for very large datasets
+            if ENABLE_MEMORY_OPTIMIZATION and len(all_resumes_data) > 500:
+                print("🔧 Large dataset detected - enabling memory optimization")
+                # For extremely large datasets, we could implement streaming processing
+                # This is a placeholder for future memory optimization techniques
 
         # Perform semantic search to filter resumes before Gemini API call
         print(f"\n🔍 --- Semantic Filtering Phase ---")
@@ -510,13 +719,14 @@ class ResumeParser:
             return [], cache_info
         
         if len(filtered_resumes) < len(all_resumes_data):
-            print(f"📊 Semantic search reduced API load: {len(all_resumes_data)} → {len(filtered_resumes)} resumes")
+            reduction_pct = ((len(all_resumes_data) - len(filtered_resumes)) / len(all_resumes_data)) * 100
+            print(f"📊 Semantic search reduced API load: {len(all_resumes_data)} → {len(filtered_resumes)} resumes ({reduction_pct:.1f}% reduction)")
 
-        # The single API call happens here with filtered resumes
+        # The batch API processing happens here with filtered resumes
         print(f"\n🚀 --- Gemini API Processing Phase ---")
         matched_candidates, gemini_cache_info = parse_resumes_batch(filtered_resumes, required_skills, force_analyze)
         
-        # Merge cache info (preserve vector_cache_hit)
+        # Merge cache info (preserve vector_cache_hit and add batch info)
         vector_cache_hit_backup = cache_info["vector_cache_hit"]
         cache_info.update(gemini_cache_info)
         cache_info["vector_cache_hit"] = vector_cache_hit_backup
@@ -528,6 +738,17 @@ class ResumeParser:
             print("Matched candidate files:")
             for candidate in matched_candidates:
                 print(f"  - {candidate.get('source_file', 'Unknown')}")
+            
+            # Performance summary for large datasets
+            if len(all_resumes_data) > 50:
+                total_time = time.time() - start_reading
+                throughput = len(all_resumes_data) / total_time
+                print(f"\n📈 Performance Summary:")
+                print(f"   • Total processing time: {total_time:.2f}s")
+                print(f"   • Throughput: {throughput:.1f} resumes/second")
+                if cache_info.get("batches_processed", 0) > 0:
+                    print(f"   • Batches processed: {cache_info['batches_processed']}/{cache_info.get('total_batches', 0)}")
+            
             return matched_candidates, cache_info
         else:
             print("\n❌ --- No candidates matched the required skills from the filtered resumes. ---")

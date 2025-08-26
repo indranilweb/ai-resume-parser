@@ -19,6 +19,7 @@ const App: React.FC = () => {
   const [isStep2Enabled, setIsStep2Enabled] = useState<boolean>(false);
   const [selectedResume, setSelectedResume] = useState<Resume | null>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [isForceAnalyze, setIsForceAnalyze] = useState<boolean>(false);
 
   const handleFolderPathChange = (path: string) => {
     setFolderPath(path);
@@ -37,6 +38,7 @@ const App: React.FC = () => {
     }
 
     setIsLoading(true);
+    setIsForceAnalyze(forceAnalyze);
     setResumes([]);
     setCacheInfo(null);
 
@@ -47,9 +49,10 @@ const App: React.FC = () => {
       setCacheInfo(response.cache_info);
     } catch (error) {
       console.error('Failed to parse resumes:', error);
-      alert('An error occurred while searching for resumes. Please check the console.');
+      alert(`An error occurred while searching for resumes: ${error instanceof Error ? error.message : 'Please check the console.'}`);
     } finally {
       setIsLoading(false);
+      setIsForceAnalyze(false);
     }
   };
 
@@ -150,7 +153,7 @@ const App: React.FC = () => {
           )}
 
           {/* Loading Indicator */}
-          <LoadingIndicator isVisible={isLoading} />
+          <LoadingIndicator isVisible={isLoading} forceAnalyze={isForceAnalyze} />
 
           {/* Results Section */}
           {!isLoading && (

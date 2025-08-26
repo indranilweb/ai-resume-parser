@@ -20,11 +20,24 @@ export class ApiService {
       }),
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
+    if (response.ok) {
+      const data = await response.json();
+      
+      if (data.error) {
+        throw new Error(data.error);
+      }
 
-    return response.json();
+      // Log performance info for large datasets
+      if (data.summary && data.summary.total_resumes_processed > 50) {
+        console.log('📊 Performance Summary:', data.summary);
+      }
+
+      return data;
+    } else {
+      const errorData = await response.json().catch(() => ({}));
+      const errorMessage = errorData.error || 'Failed to fetch results. Please try again.';
+      throw new Error(errorMessage);
+    }
   }
 
   static async clearCache(request: ClearCacheRequest): Promise<ClearCacheResponse> {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, RefreshCw, Tag } from 'lucide-react';
+import { Search, ListRestart, Tag } from 'lucide-react';
 
 interface SearchSkillsProps {
   skills: string;
@@ -71,7 +71,7 @@ const SearchSkills: React.FC<SearchSkillsProps> = ({
           title="Force fresh analysis, bypassing cache"
           className="px-4 py-2 bg-amber-600 text-white text-sm font-medium rounded-md hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <RefreshCw className="w-4 h-4" />
+          <ListRestart className="w-5 h-5" />
           <span>Force</span>
         </button>
       </div>

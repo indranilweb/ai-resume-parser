@@ -41,6 +41,22 @@ const CacheStatus: React.FC<CacheStatusProps> = ({
               <Zap className="w-3 h-3" />
               <span>Gemini: {cacheInfo.gemini_cache_hit ? 'Cached' : 'Fresh'}</span>
             </div>
+
+            {/* Batch processing indicator (if applicable) */}
+            {(cacheInfo.total_batches ?? 0) > 1 && (
+              <div 
+                className={`flex items-center space-x-2 px-2 py-1 rounded-2xl text-xs font-medium ${
+                  cacheInfo.batches_processed === cacheInfo.total_batches 
+                    ? 'bg-green-600 bg-opacity-20 text-green-400' 
+                    : 'bg-yellow-600 bg-opacity-20 text-yellow-400'
+                }`}
+              >
+                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"></path>
+                </svg>
+                <span>Batches: {cacheInfo.batches_processed}/{cacheInfo.total_batches}</span>
+              </div>
+            )}
           </div>
 
           <div className="flex items-center space-x-2 ml-4 pl-3 border-l border-gray-500">
@@ -66,8 +82,16 @@ const CacheStatus: React.FC<CacheStatusProps> = ({
         
         <div className="text-xs text-gray-400 font-mono">
           {cacheInfo.total_resumes} resumes → {cacheInfo.filtered_resumes} filtered
-          {cacheInfo.processing_time && ` • ${cacheInfo.processing_time}s`}
-          {cacheInfo.cache_key && ` • ${cacheInfo.cache_key}`}
+          {cacheInfo.processing_time && (
+            <>
+              {` • ${cacheInfo.processing_time}s`}
+              {/* Add throughput for large datasets */}
+              {cacheInfo.total_resumes > 10 && (
+                ` (${(cacheInfo.total_resumes / cacheInfo.processing_time).toFixed(1)}/s)`
+              )}
+            </>
+          )}
+          {cacheInfo.cache_key && ` • ${cacheInfo.cache_key.substring(0, 8)}...`}
         </div>
       </div>
     </div>

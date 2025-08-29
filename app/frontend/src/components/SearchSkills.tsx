@@ -76,31 +76,33 @@ const SearchSkills: React.FC<SearchSkillsProps> = ({
             />
           )}
         </div>
-        <button
-          onClick={handleToggleExpand}
-          disabled={!isEnabled || isLoading}
-          title={isExpanded ? "Switch to simple skills input" : "Switch to detailed job description"}
-          className="px-3 py-2 bg-gray-600 text-white text-sm font-medium rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition-colors flex items-center space-x-1 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-        </button>
-        <button
-          onClick={onSearch}
-          disabled={!isEnabled || isLoading}
-          className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <Search className="w-4 h-4" />
-          <span>Search</span>
-        </button>
-        <button
-          onClick={onForceAnalyze}
-          disabled={!isEnabled || isLoading}
-          title="Force fresh analysis, bypassing cache"
-          className="px-4 py-2 bg-amber-600 text-white text-sm font-medium rounded-md hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <ListRestart className="w-5 h-5" />
-          <span>Force</span>
-        </button>
+        <div className="flex space-x-3">
+          <button
+            onClick={handleToggleExpand}
+            disabled={!isEnabled || isLoading}
+            title={isExpanded ? "Switch to simple skills input" : "Switch to detailed job description"}
+            className="px-3 py-2 bg-gray-700 text-white text-sm font-medium rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-600 focus:ring-offset-2 focus:ring-offset-gray-900 transition-colors flex items-center space-x-1 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+          </button>
+          <button
+            onClick={onSearch}
+            disabled={!isEnabled || isLoading}
+            className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Search className="w-4 h-4" />
+            <span>Search</span>
+          </button>
+          <button
+            onClick={onForceAnalyze}
+            disabled={!isEnabled || isLoading}
+            title="Force fresh analysis, bypassing cache"
+            className="px-4 py-2 bg-gray-700 text-green-500 text-sm font-medium rounded-md hover:bg-green-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <ListRestart className="w-5 h-5" />
+            <span>Force</span>
+          </button>
+        </div>
       </div>
     </div>
   );

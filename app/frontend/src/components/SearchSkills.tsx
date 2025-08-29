@@ -1,5 +1,5 @@
-import React from 'react';
-import { Search, ListRestart, Tag } from 'lucide-react';
+import React, { useState } from 'react';
+import { Search, ListRestart, Tag, Maximize2, Minimize2 } from 'lucide-react';
 
 interface SearchSkillsProps {
   skills: string;
@@ -18,10 +18,16 @@ const SearchSkills: React.FC<SearchSkillsProps> = ({
   isEnabled,
   isLoading,
 }) => {
-  const handleKeyUp = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter' && isEnabled && !isLoading) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const handleKeyUp = (event: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    if (event.key === 'Enter' && isEnabled && !isLoading && !event.shiftKey) {
       onSearch();
     }
+  };
+
+  const handleToggleExpand = () => {
+    setIsExpanded(!isExpanded);
   };
 
   return (
@@ -40,23 +46,44 @@ const SearchSkills: React.FC<SearchSkillsProps> = ({
             2
           </span>
           <Search className={`w-4 h-4 ${isEnabled ? 'text-blue-400' : 'text-gray-500'}`} />
-          <span>Enter Skills to Search</span>
+          <span>{isExpanded ? 'Enter Detailed Job Requirements' : 'Enter Skills to Search'}</span>
         </span>
       </label>
-      <div className="flex space-x-3">
+      <div className="flex items-start space-x-3">
         <div className="relative flex-1">
-          <Tag className="text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none w-4 h-4" />
-          <input
-            type="text"
-            id="search-input"
-            value={skills}
-            onChange={(e) => onSkillsChange(e.target.value)}
-            onKeyUp={handleKeyUp}
-            disabled={!isEnabled || isLoading}
-            className="w-full pl-10 pr-3 py-2 bg-gray-900 border border-gray-700 rounded-md text-gray-100 placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none text-sm font-mono"
-            placeholder="e.g., Angular, .NET, C#, React, Python"
-          />
+          <Tag className="text-gray-400 absolute left-3 top-3 pointer-events-none w-4 h-4" />
+          {isExpanded ? (
+            <textarea
+              id="search-input"
+              value={skills}
+              onChange={(e) => onSkillsChange(e.target.value)}
+              onKeyUp={handleKeyUp}
+              disabled={!isEnabled || isLoading}
+              rows={4}
+              className="w-full pl-10 pr-3 py-2 bg-gray-900 border border-gray-700 rounded-md text-gray-100 placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none text-sm resize-y"
+              placeholder="Describe the job requirements in detail. Include skills like Angular, .NET, C#, React, Python, responsibilities, experience level, soft skills, etc."
+            />
+          ) : (
+            <input
+              type="text"
+              id="search-input"
+              value={skills}
+              onChange={(e) => onSkillsChange(e.target.value)}
+              onKeyUp={handleKeyUp}
+              disabled={!isEnabled || isLoading}
+              className="w-full pl-10 pr-3 py-2 bg-gray-900 border border-gray-700 rounded-md text-gray-100 placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none text-sm font-mono"
+              placeholder="e.g., Angular, .NET, C#, React, Python"
+            />
+          )}
         </div>
+        <button
+          onClick={handleToggleExpand}
+          disabled={!isEnabled || isLoading}
+          title={isExpanded ? "Switch to simple skills input" : "Switch to detailed job description"}
+          className="px-3 py-2 bg-gray-600 text-white text-sm font-medium rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition-colors flex items-center space-x-1 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+        </button>
         <button
           onClick={onSearch}
           disabled={!isEnabled || isLoading}

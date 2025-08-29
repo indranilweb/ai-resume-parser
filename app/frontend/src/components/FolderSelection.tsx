@@ -45,7 +45,8 @@ const FolderSelection: React.FC<FolderSelectionProps> = ({
         />
         <button
           onClick={onProceed}
-          className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition-colors flex items-center space-x-2"
+          disabled={!folderPath || folderPath === 'No folder selected...'}
+          className="px-4 py-2 bg-gray-700 text-blue-500 text-sm font-medium rounded-md hover:bg-blue-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition-colors flex items-center space-x-2 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed disabled:hover:bg-gray-700 disabled:hover:text-gray-500"
         >
           <ArrowRight className="w-4 h-4" />
           <span>Proceed</span>

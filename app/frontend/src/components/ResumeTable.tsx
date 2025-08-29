@@ -67,7 +67,7 @@ const ResumeTable: React.FC<ResumeTableProps> = ({ resumes, onViewDetails, hasSe
                   Companies
                 </div>
               </th>
-              <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+              <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider max-w-80 w-80">
                 <div className="flex items-center">
                   <Code className="w-3.5 h-3.5 mr-2" />
                   Key Skills
@@ -135,7 +135,7 @@ const ResumeTableRow: React.FC<ResumeTableRowProps> = ({ resume, onViewDetails }
           )}
         </ul>
       </td>
-      <td className="px-4 py-3">
+      <td className="px-4 py-3 max-w-80 w-80">
         <div className="flex flex-wrap">
           {resume.top_5_technical_skills && resume.top_5_technical_skills.length > 0 ? (
             resume.top_5_technical_skills.map((skill, index) => (

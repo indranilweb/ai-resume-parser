@@ -4,7 +4,9 @@ import os
 import shutil
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from resume_parser_gemini import ResumeParser, clear_cache, CACHE_DIR, VECTOR_DB_DIR  # Import AI agent class
+# Updated imports after modular refactor
+from parser import ResumeParser, clear_cache  # type: ignore
+from parser.config import CACHE_DIR, VECTOR_DB_DIR  # type: ignore
 
 app = FastAPI()
 

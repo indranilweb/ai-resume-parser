@@ -19,7 +19,9 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
   icon
 }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
+  const [shouldOpenUpward, setShouldOpenUpward] = useState<boolean>(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -33,6 +35,23 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  useEffect(() => {
+    if (isDropdownOpen && triggerRef.current) {
+      const triggerRect = triggerRef.current.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const dropdownHeight = options.length * 40 + 8; // Approximate height of dropdown
+      const spaceBelow = viewportHeight - triggerRect.bottom;
+      const spaceAbove = triggerRect.top;
+
+      // Open upward if there's not enough space below but enough space above
+      if (spaceBelow < dropdownHeight && spaceAbove > dropdownHeight) {
+        setShouldOpenUpward(true);
+      } else {
+        setShouldOpenUpward(false);
+      }
+    }
+  }, [isDropdownOpen, options.length]);
 
   const handleOptionToggle = (option: string) => {
     const newSelection = selectedOptions.includes(option)
@@ -59,6 +78,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
       )}
       <div className="relative" ref={dropdownRef}>
         <div
+          ref={triggerRef}
           className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-md text-gray-100 placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none text-sm cursor-pointer min-h-[38px] flex items-center justify-between"
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
         >
@@ -90,7 +110,9 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
         </div>
         
         {isDropdownOpen && (
-          <div className="absolute z-10 w-full mt-1 bg-gray-900 border border-gray-700 rounded-md shadow-lg">
+          <div className={`absolute z-10 w-full bg-gray-900 border border-gray-700 rounded-md shadow-lg ${
+            shouldOpenUpward ? 'bottom-full mb-1' : 'top-full mt-1'
+          }`}>
             {options.map((option) => (
               <div
                 key={option}

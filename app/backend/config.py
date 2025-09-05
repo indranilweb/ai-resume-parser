@@ -1,10 +1,20 @@
 import os
 
 # Add Gemini AI token here or import from env var
-GEMINI_KEY = os.getenv("GEMINI_KEY")
+AI_PROVIDER = "gemini"  # Change to 'azure' to use Azure OpenAI
+
+# Gemini settings
+GEMINI_KEY = os.getenv("GEMINI_KEY", "")
 
 # Add Gemini AI model name here
 GEMINI_MODEL = "gemini-2.5-flash"
+
+# Azure OpenAI settings (only required if AI_PROVIDER == 'azure')
+# It's recommended to set these via environment variables in production.
+AZURE_OPENAI_API_KEY = os.getenv("AZURE_OPENAI_API_KEY", "")
+AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT", "")  # e.g. https://your-resource-name.openai.azure.com/
+AZURE_OPENAI_DEPLOYMENT = os.getenv("AZURE_OPENAI_DEPLOYMENT", "")  # e.g. gpt-4o-mini
+AZURE_OPENAI_API_VERSION = os.getenv("AZURE_OPENAI_API_VERSION", "2024-02-15-preview")
 
 # Performance and Scalability Configuration
 # These settings help the application handle large datasets (1000+ resumes)

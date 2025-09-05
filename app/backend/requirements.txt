@@ -3,6 +3,7 @@ uvicorn
 pypdf
 python-docx
 google.generativeai
+openai
 sentence-transformers
 faiss-cpu
 numpy

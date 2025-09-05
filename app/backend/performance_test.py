@@ -7,7 +7,7 @@ Tests the scalability improvements for handling large datasets (1000+ resumes)
 import os
 import time
 import json
-from resume_parser_gemini import ResumeParser
+from parser import ResumeParser  # type: ignore
 
 def test_performance():
     """Test the performance of the resume parser with different dataset sizes."""

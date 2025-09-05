@@ -13,7 +13,7 @@ const Header: React.FC<HeaderProps> = ({ resumeCount }) => {
           <FileText className="text-white w-4 h-4" />
         </div>
         <h1 className="text-2xl font-semibold text-gray-100">
-          <span className="text-blue-400">AI-powered</span> Resume Parser
+          <span className="text-blue-400">AI-powered</span> Resume Screener
         </h1>
       </div>
       {resumeCount > 0 && (

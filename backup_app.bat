@@ -1,8 +1,8 @@
 @echo off
 setlocal enabledelayedexpansion
 
-echo AI Resume Parser - App Backup Script
-echo =====================================
+echo AI Resume Parser - Project Backup Script
+echo ==========================================
 
 :: Get current date and time for backup filename
 for /f "tokens=2 delims==" %%a in ('wmic OS Get localdatetime /value') do set "dt=%%a"
@@ -11,9 +11,9 @@ set "HH=%dt:~8,2%" & set "Min=%dt:~10,2%" & set "Sec=%dt:~12,2%"
 set "timestamp=%YYYY%%MM%%DD%_%HH%%Min%%Sec%"
 
 :: Set directories
-set "SOURCE_DIR=%~dp0app"
+set "SOURCE_DIR=%~dp0"
 set "BACKUP_DIR=%~dp0backups"
-set "BACKUP_FILE=%BACKUP_DIR%\app_backup_%timestamp%.zip"
+set "BACKUP_FILE=%BACKUP_DIR%\project_backup_%timestamp%.zip"
 
 :: Create backup directory if it doesn't exist
 if not exist "%BACKUP_DIR%" mkdir "%BACKUP_DIR%"
@@ -40,31 +40,7 @@ if %errorlevel% equ 0 (
         -x!*\node_modules\* ^
         -x!*\__pycache__\* ^
         -x!*\venv\* ^
-        -x!*\.venv\* ^
-        -x!*\env\* ^
-        -x!*\.env\* ^
-        -x!*\.git\* ^
-        -x!*\.vscode\* ^
-        -x!*\dist\* ^
-        -x!*\build\* ^
-        -x!*\.next\* ^
-        -x!*\coverage\* ^
-        -x!*\.nyc_output\* ^
-        -x!*\logs\* ^
-        -x!*\cache_dir\* ^
-        -x!*.pyc ^
-        -x!*.pyo ^
-        -x!*.log ^
-        -x!*.tmp ^
-        -x!*.cache ^
-        -x!.DS_Store ^
-        -x!Thumbs.db ^
-        -x!npm-debug.log ^
-        -x!yarn-error.log ^
-        -x!.env.local ^
-        -x!.env.development.local ^
-        -x!.env.test.local ^
-        -x!.env.production.local
+        -x!backups\*
     
     if %errorlevel% equ 0 (
         echo.
@@ -94,27 +70,7 @@ if %errorlevel% equ 0 (
     echo     '*\node_modules\*', >> temp_backup.ps1
     echo     '*\__pycache__\*', >> temp_backup.ps1
     echo     '*\venv\*', >> temp_backup.ps1
-    echo     '*\.venv\*', >> temp_backup.ps1
-    echo     '*\env\*', >> temp_backup.ps1
-    echo     '*\.env\*', >> temp_backup.ps1
-    echo     '*\.git\*', >> temp_backup.ps1
-    echo     '*\.vscode\*', >> temp_backup.ps1
-    echo     '*\dist\*', >> temp_backup.ps1
-    echo     '*\build\*', >> temp_backup.ps1
-    echo     '*\.next\*', >> temp_backup.ps1
-    echo     '*\coverage\*', >> temp_backup.ps1
-    echo     '*\.nyc_output\*', >> temp_backup.ps1
-    echo     '*\logs\*', >> temp_backup.ps1
-    echo     '*\cache_dir\*', >> temp_backup.ps1
-    echo     '*.pyc', >> temp_backup.ps1
-    echo     '*.pyo', >> temp_backup.ps1
-    echo     '*.log', >> temp_backup.ps1
-    echo     '*.tmp', >> temp_backup.ps1
-    echo     '*.cache', >> temp_backup.ps1
-    echo     '.DS_Store', >> temp_backup.ps1
-    echo     'Thumbs.db', >> temp_backup.ps1
-    echo     'npm-debug.log', >> temp_backup.ps1
-    echo     'yarn-error.log' >> temp_backup.ps1
+    echo     'backups\*' >> temp_backup.ps1
     echo ^) >> temp_backup.ps1
     echo. >> temp_backup.ps1
     echo Write-Host "Creating backup archive..." >> temp_backup.ps1
@@ -135,7 +91,8 @@ if %errorlevel% equ 0 (
     echo. >> temp_backup.ps1
     echo foreach ($file in $files^) { >> temp_backup.ps1
     echo     if (-not $file.PSIsContainer^) { >> temp_backup.ps1
-    echo         $relativePath = $file.FullName.Substring($source.Length + 1^) >> temp_backup.ps1
+    echo         $relativePath = $file.FullName.Substring($source.Length^) >> temp_backup.ps1
+    echo         if ($relativePath.StartsWith('\'^)^) { $relativePath = $relativePath.Substring(1^) } >> temp_backup.ps1
     echo         Write-Host "Adding: $relativePath" >> temp_backup.ps1
     echo         [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $file.FullName, $relativePath^) ^| Out-Null >> temp_backup.ps1
     echo     } >> temp_backup.ps1

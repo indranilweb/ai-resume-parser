@@ -46,8 +46,15 @@ def get_embedding_model():
     if not ENABLE_VECTOR_SEARCH:
         return None
     try:
-        _embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
-        print("🔧 Sentence transformer model loaded successfully")
+        # Try to load from local model directory first (for offline deployment)
+        local_model_path = os.path.join(os.path.dirname(__file__), '..', 'models', 'all-MiniLM-L6-v2')
+        if os.path.exists(local_model_path):
+            _embedding_model = SentenceTransformer(local_model_path)
+            print(f"🔧 Sentence transformer model loaded from local path: {local_model_path}")
+        else:
+            # Fallback to downloading from Hugging Face (requires internet)
+            _embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
+            print("🔧 Sentence transformer model loaded from Hugging Face")
     except Exception as e:
         print(f"⚠️ Warning: Could not load sentence transformer model: {e}")
         print("Vector search will be disabled")

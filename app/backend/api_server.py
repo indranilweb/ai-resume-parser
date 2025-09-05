@@ -47,7 +47,7 @@ async def parse_resume(request: Request):
                 "total_resumes_processed": cache_info.get("total_resumes", 0),
                 "resumes_after_filtering": cache_info.get("filtered_resumes", 0),
                 "processing_time": cache_info.get("processing_time", 0),
-                "used_cache": cache_info.get("gemini_cache_hit", False) or cache_info.get("vector_cache_hit", False)
+                "used_cache": cache_info.get("genai_cache_hit", False) or cache_info.get("vector_cache_hit", False)
             }
         }
         
@@ -73,8 +73,8 @@ async def clear_cache_endpoint(request: Request):
             return {"success": True, "message": "Current cache cleared successfully"}
         elif cache_type == "all":
             # Clear all caches
-            clear_cache()  # Clear all Gemini cache
-            print("🗑️ All Gemini cache cleared via API")
+            clear_cache()  # Clear all GenAI cache
+            print("🗑️ All GenAI cache cleared via API")
             
             # Clear vector database
             if os.path.exists(VECTOR_DB_DIR):

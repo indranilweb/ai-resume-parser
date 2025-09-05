@@ -35,7 +35,7 @@ def _split_into_batches(items: dict, batch_size: int) -> List[dict]:
 def parse_resumes_batch(resumes_data: dict, required_skills: List[str], force_analyze: bool=False):
     """Gemini implementation: Sends resume text to Gemini API for batch parsing and filtering."""
     cache_info = {
-        "gemini_cache_hit": False,
+        "genai_cache_hit": False,
         "vector_cache_hit": False,
         "cache_key": None,
         "processing_time": None,
@@ -57,7 +57,7 @@ def parse_resumes_batch(resumes_data: dict, required_skills: List[str], force_an
         print("🔥 Force analyze requested - skipping cache check")
 
     if cached_result is not None and not force_analyze:
-        cache_info['gemini_cache_hit'] = True
+        cache_info['genai_cache_hit'] = True
         print("🎯 CACHE HIT: Found cached result! Skipping Gemini API call.")
         print(f"✅ Returning {len(cached_result)} cached candidate(s)")
         return cached_result, cache_info

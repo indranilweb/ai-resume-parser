@@ -17,7 +17,7 @@ else:
     def parse_resumes_batch(*_, **__):  # type: ignore
         print(f"❌ Unknown AI_PROVIDER '{AI_PROVIDER}'. {_ERR_HELP}")
         return [], {
-            "gemini_cache_hit": False,
+            "genai_cache_hit": False,
             "vector_cache_hit": False,
             "cache_key": None,
             "processing_time": None,

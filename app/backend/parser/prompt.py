@@ -1,6 +1,6 @@
 def construct_batch_prompt(resumes_data: dict, required_skills: list[str]) -> str:
     """
-    Constructs a detailed prompt for the Gemini API to process multiple resumes,
+    Constructs a detailed prompt for the GenAI API to process multiple resumes,
     filter them by skills, and extract data for the matched ones.
     """
     skills_string = ", ".join(required_skills)
@@ -42,7 +42,7 @@ def construct_batch_prompt(resumes_data: dict, required_skills: list[str]) -> st
     Do not include any explanations, introductory text, markdown formatting like ```json, or any text outside of the final JSON array.
     If a piece of information cannot be found, use `null` as the value for that key.
     """
-    print("📝 Constructed a batch prompt for the Gemini API.")
+    print("📝 Constructed a batch prompt for the GenAI API.")
     return prompt
 
 __all__ = ['construct_batch_prompt']

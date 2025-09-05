@@ -19,7 +19,7 @@ AZURE_OPENAI_API_VERSION = os.getenv("AZURE_OPENAI_API_VERSION", "2024-02-15-pre
 # Performance and Scalability Configuration
 # These settings help the application handle large datasets (1000+ resumes)
 PERFORMANCE_CONFIG = {
-    "MAX_RESUMES_PER_BATCH": 15,     # Max resumes in a single Gemini API call
+    "MAX_RESUMES_PER_BATCH": 15,     # Max resumes in a single GenAI API call
     "ENABLE_PARALLEL_READING": True, # Enable parallel file reading
     "MAX_WORKERS": 4,                # Number of worker threads for file reading
     "SIMILARITY_THRESHOLD": 0.3,     # Vector search similarity threshold

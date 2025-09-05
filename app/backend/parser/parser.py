@@ -10,7 +10,7 @@ class ResumeParser:
     def main(self, dir_path: str, query_string: str, force_analyze: bool=False):
         """Main function to run the resume parser application."""
         cache_info = {
-            "gemini_cache_hit": False,
+            "genai_cache_hit": False,
             "vector_cache_hit": False,
             "cache_key": None,
             "processing_time": None,
@@ -90,11 +90,11 @@ class ResumeParser:
 
         # The batch AI provider processing happens here with filtered resumes
         print(f"\n🚀 --- {AI_PROVIDER.upper()} API Processing Phase ---")
-        matched_candidates, gemini_cache_info = parse_resumes_batch(filtered_resumes, required_skills, force_analyze)
+        matched_candidates, genai_cache_info = parse_resumes_batch(filtered_resumes, required_skills, force_analyze)
 
         # Merge cache info (preserve vector_cache_hit and add batch info)
         vector_cache_hit_backup = cache_info['vector_cache_hit']
-        cache_info.update(gemini_cache_info)
+        cache_info.update(genai_cache_info)
         cache_info['vector_cache_hit'] = vector_cache_hit_backup
 
         if matched_candidates:

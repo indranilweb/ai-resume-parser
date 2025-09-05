@@ -18,7 +18,7 @@ const CacheStatus: React.FC<CacheStatusProps> = ({
   }
 
   return (
-    <div className="border border-gray-700 rounded-lg bg-gray-800 p-4">
+    <div className="border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 p-4 transition-colors duration-200">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <div className="flex space-x-2">
@@ -59,12 +59,12 @@ const CacheStatus: React.FC<CacheStatusProps> = ({
             )}
           </div>
 
-          <div className="flex items-center space-x-2 ml-4 pl-3 border-l border-gray-500">
-            <div className="text-xs text-gray-400 font-medium mr-1">Clear Cache:</div>
+          <div className="flex items-center space-x-2 ml-4 pl-3 border-l border-gray-400 dark:border-gray-500">
+            <div className="text-xs text-gray-600 dark:text-gray-400 font-medium mr-1">Clear Cache:</div>
             <button
               onClick={onClearCurrentCache}
               title="Clear current search cache"
-              className="px-3 py-1 bg-gray-700 text-red-500 text-xs font-medium rounded-md hover:bg-red-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition-colors flex items-center space-x-1"
+              className="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-red-600 dark:text-red-500 text-xs font-medium rounded-md hover:bg-red-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-gray-50 dark:focus:ring-offset-gray-800 transition-colors flex items-center space-x-1"
             >
               <Trash className="w-3 h-3" />
               <span>Current</span>
@@ -72,7 +72,7 @@ const CacheStatus: React.FC<CacheStatusProps> = ({
             <button
               onClick={onClearAllCache}
               title="Clear all cache"
-              className="px-3 py-1 bg-gray-700 text-red-500 text-xs font-medium rounded-md hover:bg-red-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition-colors flex items-center space-x-1"
+              className="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-red-600 dark:text-red-500 text-xs font-medium rounded-md hover:bg-red-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-gray-50 dark:focus:ring-offset-gray-800 transition-colors flex items-center space-x-1"
             >
               <Trash2 className="w-3 h-3" />
               <span>All</span>
@@ -80,7 +80,7 @@ const CacheStatus: React.FC<CacheStatusProps> = ({
           </div>
         </div>
         
-        <div className="text-xs text-gray-400 font-mono">
+        <div className="text-xs text-gray-600 dark:text-gray-400 font-mono">
           {cacheInfo.total_resumes} resumes → {cacheInfo.filtered_resumes} filtered
           {cacheInfo.processing_time && (
             <>

@@ -2,28 +2,40 @@
 @tailwind components;
 @tailwind utilities;
 
-/* GitHub Dark Mode Inspired Styling using standard colors */
+/* GitHub-inspired styling with light/dark mode support */
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
     line-height: 1.5;
 }
 
-/* Custom scrollbar for GitHub-like appearance */
+/* Custom scrollbar for both themes */
 ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
 }
 
 ::-webkit-scrollbar-track {
+    background: #f3f4f6; /* gray-100 */
+}
+
+.dark ::-webkit-scrollbar-track {
     background: #111827; /* gray-900 */
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #374151; /* gray-700 */
+    background: #d1d5db; /* gray-300 */
     border-radius: 4px;
 }
 
+.dark ::-webkit-scrollbar-thumb {
+    background: #374151; /* gray-700 */
+}
+
 ::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af; /* gray-400 */
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
     background: #6b7280; /* gray-500 */
 }
 
@@ -38,24 +50,43 @@ body {
 }
 
 .modal-scroll::-webkit-scrollbar-track {
+    background: #f9fafb; /* gray-50 */
+}
+
+.dark .modal-scroll::-webkit-scrollbar-track {
     background: #1f2937; /* gray-800 */
 }
 
 .modal-scroll::-webkit-scrollbar-thumb {
-    background: #4b5563; /* gray-600 */
+    background: #e5e7eb; /* gray-200 */
     border-radius: 3px;
 }
 
+.dark .modal-scroll::-webkit-scrollbar-thumb {
+    background: #4b5563; /* gray-600 */
+}
+
 .modal-scroll::-webkit-scrollbar-thumb:hover {
+    background: #d1d5db; /* gray-300 */
+}
+
+.dark .modal-scroll::-webkit-scrollbar-thumb:hover {
     background: #6b7280; /* gray-500 */
 }
 
-/* Enhanced skill badge styling for modal */
+/* Enhanced skill badge styling for modal - light theme */
 .skill-badge {
+    background-color: rgba(37, 99, 235, 0.15); /* blue-600 with opacity */
+    color: #2563eb; /* blue-600 */
+    border: 1px solid rgba(37, 99, 235, 0.3);
+    transition: all 0.2s ease;
+}
+
+/* Enhanced skill badge styling for modal - dark theme */
+.dark .skill-badge {
     background-color: rgba(37, 99, 235, 0.15); /* blue-600 with opacity */
     color: #60a5fa; /* blue-400 */
     border: 1px solid rgba(37, 99, 235, 0.3);
-    transition: all 0.2s ease;
 }
 
 .skill-badge:hover {
@@ -71,22 +102,35 @@ select:focus {
     box-shadow: 0 0 0 2px #2563eb; /* blue-600 */
 }
 
-/* Table hover effects */
+/* Table hover effects - light theme */
 tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+}
+
+/* Table hover effects - dark theme */
+.dark tbody tr:hover {
     background-color: rgba(255, 255, 255, 0.03);
 }
 
 /* Cache status indicators */
 .cache-hit {
     background-color: rgba(22, 163, 74, 0.15); /* green-600 with opacity */
-    color: #4ade80; /* green-400 */
+    color: #16a34a; /* green-600 */
     border: 1px solid rgba(22, 163, 74, 0.3);
+}
+
+.dark .cache-hit {
+    color: #4ade80; /* green-400 */
 }
 
 .cache-miss {
     background-color: rgba(220, 108, 38, 0.15); /* orange-600 with opacity */
-    color: #f8a971; /* orange-400 */
+    color: #dc6c26; /* orange-600 */
     border: 1px solid rgba(220, 111, 38, 0.3);
+}
+
+.dark .cache-miss {
+    color: #f8a971; /* orange-400 */
 }
 
 /* Code font for paths */
@@ -104,7 +148,7 @@ button:active {
     transform: translateY(0);
 }
 
-/* Company list styling */
+/* Company list styling - light theme */
 .company-list li {
     position: relative;
     padding-left: 1rem;
@@ -114,6 +158,11 @@ button:active {
     content: "•";
     position: absolute;
     left: 0;
+    color: #6b7280; /* gray-500 */
+}
+
+/* Company list styling - dark theme */
+.dark .company-list li::before {
     color: #9ca3af; /* gray-400 */
 }
 
@@ -123,7 +172,7 @@ button:active {
     opacity: 0.95;
 }
 
-/* small entrance effect */
+/* Small entrance effect */
 @keyframes subtleSlideIn {
     from { opacity: 0; transform: translateX(6px); }
     to { opacity: 0.95; transform: translateX(0); }

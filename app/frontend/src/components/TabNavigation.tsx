@@ -8,14 +8,14 @@ interface TabNavigationProps {
 
 const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange }) => {
   return (
-    <div className="border-b border-gray-700 mb-6">
+    <div className="border-b border-gray-300 dark:border-gray-700 mb-6">
       <nav className="flex space-x-8">
         <button
           onClick={() => onTabChange('extractor')}
-          className={`py-4 px-1 border-b-2 focus:shadow-none font-medium text-sm flex items-center space-x-2 ${
+          className={`py-4 px-1 border-b-2 focus:shadow-none font-medium text-sm flex items-center space-x-2 transition-colors duration-200 ${
             activeTab === 'extractor'
-              ? 'border-blue-500 text-blue-400'
-              : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-500'
+              ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+              : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-400 dark:hover:border-gray-500'
           }`}
         >
           <FileDown className="w-4 h-4" />
@@ -23,10 +23,10 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange })
         </button>
         <button
           onClick={() => onTabChange('profiler')}
-          className={`py-4 px-1 border-b-2 focus:shadow-none font-medium text-sm flex items-center space-x-2 ${
+          className={`py-4 px-1 border-b-2 focus:shadow-none font-medium text-sm flex items-center space-x-2 transition-colors duration-200 ${
             activeTab === 'profiler'
-              ? 'border-blue-500 text-blue-400'
-              : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-500'
+              ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+              : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-400 dark:hover:border-gray-500'
           }`}
         >
           <UserSearch className="w-4 h-4" />

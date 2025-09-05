@@ -25,12 +25,12 @@ const FolderSelection: React.FC<FolderSelectionProps> = ({
 
   return (
     <div className="space-y-4">
-      <label htmlFor="folder-path" className="block text-sm font-medium text-gray-100 mb-3">
+      <label htmlFor="folder-path" className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">
         <span className="flex items-center space-x-3">
           <span className="w-6 h-6 bg-blue-600 text-white rounded-md text-xs flex items-center justify-center font-semibold">
             1
           </span>
-          <Folder className="text-blue-400 w-4 h-4" />
+          <Folder className="text-blue-600 dark:text-blue-400 w-4 h-4" />
           <span>Enter Resume Folder Path</span>
         </span>
       </label>
@@ -40,13 +40,13 @@ const FolderSelection: React.FC<FolderSelectionProps> = ({
           id="folder-path"
           value={folderPath}
           onChange={(e) => onFolderPathChange(e.target.value)}
-          className="flex-1 bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-gray-100 placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none text-sm font-mono"
+          className="flex-1 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none text-sm font-mono transition-colors duration-200"
           placeholder="No folder selected..."
         />
         <button
           onClick={onProceed}
           disabled={!folderPath || folderPath === 'No folder selected...'}
-          className="px-4 py-2 bg-gray-700 text-blue-500 text-sm font-medium rounded-md hover:bg-blue-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition-colors flex items-center space-x-2 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed disabled:hover:bg-gray-700 disabled:hover:text-gray-500"
+          className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-blue-600 dark:text-blue-500 text-sm font-medium rounded-md hover:bg-blue-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-50 dark:focus:ring-offset-gray-800 transition-colors flex items-center space-x-2 disabled:bg-gray-200 dark:disabled:bg-gray-700 disabled:text-gray-400 dark:disabled:text-gray-500 disabled:cursor-not-allowed disabled:hover:bg-gray-200 dark:disabled:hover:bg-gray-700 disabled:hover:text-gray-400 dark:disabled:hover:text-gray-500"
         >
           <ArrowRight className="w-4 h-4" />
           <span>Proceed</span>

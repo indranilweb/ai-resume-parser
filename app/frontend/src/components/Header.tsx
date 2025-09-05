@@ -1,5 +1,6 @@
 import React from 'react';
 import { FileText } from 'lucide-react';
+import ThemeToggle from './ThemeToggle';
 
 interface HeaderProps {
   resumeCount: number;
@@ -12,19 +13,22 @@ const Header: React.FC<HeaderProps> = ({ resumeCount }) => {
         <div className="w-8 h-8 bg-gradient-to-br from-blue-600 via-indigo-600 to-pink-500 rounded-lg flex items-center justify-center">
           <FileText className="text-white w-4 h-4" />
         </div>
-        <h1 className="text-2xl font-semibold text-gray-100">
-          <span className="text-blue-400">AI-powered</span> Resume Screener
+        <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+          <span className="text-blue-600 dark:text-blue-400">AI-powered</span> Resume Screener
         </h1>
       </div>
-      {resumeCount > 0 && (
-        <div 
-          id="resume-count" 
-          className="text-xs text-white font-medium border border-gray-500 rounded-2xl px-2 py-1 resume-count-animate"
-        >
-          <span className="inline-block w-2 h-2 rounded-full bg-green-500 mr-1"></span>
-          <span>{resumeCount}</span> resume(s) analyzed
-        </div>
-      )}
+      <div className="flex items-center space-x-4">
+        {resumeCount > 0 && (
+          <div 
+            id="resume-count" 
+            className="text-xs text-gray-700 dark:text-white font-medium border border-gray-400 dark:border-gray-500 rounded-2xl px-2 py-1 resume-count-animate"
+          >
+            <span className="inline-block w-2 h-2 rounded-full bg-green-500 mr-1"></span>
+            <span>{resumeCount}</span> resume(s) analyzed
+          </div>
+        )}
+        <ThemeToggle />
+      </div>
     </div>
   );
 };

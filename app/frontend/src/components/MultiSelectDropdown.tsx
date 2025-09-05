@@ -69,7 +69,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
   return (
     <div className="space-y-4">
       {label && (
-        <label className="block text-sm font-medium text-gray-100 mb-3">
+        <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">
           <span className="flex items-center space-x-3">
             {icon}
             <span>{label}</span>
@@ -79,7 +79,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
       <div className="relative" ref={dropdownRef}>
         <div
           ref={triggerRef}
-          className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-md text-gray-100 placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none text-sm cursor-pointer min-h-[38px] flex items-center justify-between"
+          className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-md text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none text-sm cursor-pointer min-h-[38px] flex items-center justify-between transition-colors duration-200"
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
         >
           <div className="flex flex-wrap gap-1.5">
@@ -103,21 +103,21 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                 </span>
               ))
             ) : (
-              <span className="text-gray-400">{placeholder}</span>
+              <span className="text-gray-500 dark:text-gray-400">{placeholder}</span>
             )}
           </div>
-          <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isDropdownOpen ? 'transform rotate-180' : ''}`} />
+          <ChevronDown className={`w-4 h-4 text-gray-500 dark:text-gray-400 transition-transform ${isDropdownOpen ? 'transform rotate-180' : ''}`} />
         </div>
         
         {isDropdownOpen && (
-          <div className={`absolute z-10 w-full bg-gray-900 border border-gray-700 rounded-md shadow-lg ${
+          <div className={`absolute z-10 w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-md shadow-lg transition-colors duration-200 ${
             shouldOpenUpward ? 'bottom-full mb-1' : 'top-full mt-1'
           }`}>
             {options.map((option) => (
               <div
                 key={option}
-                className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-800 flex items-center space-x-2 ${
-                  selectedOptions.includes(option) ? 'bg-gray-800' : ''
+                className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center space-x-2 transition-colors duration-200 ${
+                  selectedOptions.includes(option) ? 'bg-gray-100 dark:bg-gray-800' : ''
                 }`}
                 onClick={() => handleOptionToggle(option)}
               >
@@ -125,9 +125,9 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                   type="checkbox"
                   checked={selectedOptions.includes(option)}
                   onChange={() => {}} // Handled by onClick
-                  className="w-4 h-4 text-blue-600 bg-gray-900 border-gray-600 rounded focus:ring-blue-500 focus:ring-2"
+                  className="w-4 h-4 text-blue-600 bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 focus:ring-2"
                 />
-                <span className="text-gray-100">{option}</span>
+                <span className="text-gray-900 dark:text-gray-100">{option}</span>
               </div>
             ))}
           </div>

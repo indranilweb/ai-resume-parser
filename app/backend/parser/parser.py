@@ -4,13 +4,13 @@ from .progress import ProgressTracker
 from .file_readers import read_resumes_parallel
 from .vector_search import semantic_search_resumes
 from .batch import parse_resumes_batch
-from .config import ENABLE_MEMORY_OPTIMIZATION
+from .config import ENABLE_MEMORY_OPTIMIZATION, AI_PROVIDER
 
 class ResumeParser:
     def main(self, dir_path: str, query_string: str, force_analyze: bool=False):
         """Main function to run the resume parser application."""
         cache_info = {
-            "gemini_cache_hit": False,
+            "genai_cache_hit": False,
             "vector_cache_hit": False,
             "cache_key": None,
             "processing_time": None,
@@ -74,7 +74,7 @@ class ResumeParser:
                 # For extremely large datasets, we could implement streaming processing
                 # This is a placeholder for future memory optimization techniques
 
-        # Perform semantic search to filter resumes before Gemini API call
+        # Perform semantic search to filter resumes before AI model API call
         print(f"\n🔍 --- Semantic Filtering Phase ---")
         filtered_resumes, vector_cache_hit = semantic_search_resumes(required_skills, all_resumes_data, force_analyze=force_analyze)
         cache_info['vector_cache_hit'] = vector_cache_hit
@@ -88,13 +88,13 @@ class ResumeParser:
             reduction_pct = ((len(all_resumes_data) - len(filtered_resumes)) / len(all_resumes_data)) * 100
             print(f"📊 Semantic search reduced API load: {len(all_resumes_data)} → {len(filtered_resumes)} resumes ({reduction_pct:.1f}% reduction)")
 
-        # The batch API processing happens here with filtered resumes
-        print(f"\n🚀 --- Gemini API Processing Phase ---")
-        matched_candidates, gemini_cache_info = parse_resumes_batch(filtered_resumes, required_skills, force_analyze)
-        
+        # The batch AI provider processing happens here with filtered resumes
+        print(f"\n🚀 --- {AI_PROVIDER.upper()} API Processing Phase ---")
+        matched_candidates, genai_cache_info = parse_resumes_batch(filtered_resumes, required_skills, force_analyze)
+
         # Merge cache info (preserve vector_cache_hit and add batch info)
         vector_cache_hit_backup = cache_info['vector_cache_hit']
-        cache_info.update(gemini_cache_info)
+        cache_info.update(genai_cache_info)
         cache_info['vector_cache_hit'] = vector_cache_hit_backup
 
         if matched_candidates:
@@ -114,7 +114,7 @@ class ResumeParser:
                 print(f"   • Throughput: {throughput:.1f} resumes/second")
                 if cache_info.get('batches_processed',0) > 0:
                     print(f"   • Batches processed: {cache_info['batches_processed']}/{cache_info.get('total_batches',0)}")
-            
+
             return matched_candidates, cache_info
         else:
             print("\n❌ --- No candidates matched the required skills from the filtered resumes. ---")

@@ -33,7 +33,7 @@ The application includes configurable performance settings in `config.py`:
 
 ```python
 PERFORMANCE_CONFIG = {
-    "MAX_RESUMES_PER_BATCH": 15,     # Max resumes in a single Gemini API call
+    "MAX_RESUMES_PER_BATCH": 15,     # Max resumes in a single GenAI API call
     "ENABLE_PARALLEL_READING": True, # Enable parallel file reading
     "MAX_WORKERS": 4,                # Number of worker threads for file reading
     "SIMILARITY_THRESHOLD": 0.3,     # Vector search similarity threshold
@@ -44,7 +44,7 @@ PERFORMANCE_CONFIG = {
 
 ### Caching System
 - **Vector Cache**: Caches semantic search results to avoid recomputing embeddings
-- **Gemini Cache**: Caches API results for identical queries and resume sets
+- **GenAI Cache**: Caches API results for identical queries and resume sets
 - **Smart Cache Keys**: Uses content hashes to detect changes automatically
 - **Selective Cache Clearing**: Clear specific caches or all caches as needed
 

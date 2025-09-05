@@ -13,7 +13,7 @@ export interface Resume {
 export interface CacheInfo {
   cache_key: string;
   vector_cache_hit: boolean;
-  gemini_cache_hit: boolean;
+  genai_cache_hit: boolean;
   total_resumes: number;
   filtered_resumes: number;
   processing_time?: number;

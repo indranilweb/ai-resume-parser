@@ -32,14 +32,14 @@ const CacheStatus: React.FC<CacheStatusProps> = ({
               <span>Vector: {cacheInfo.vector_cache_hit ? 'Cached' : 'Fresh'}</span>
             </div>
 
-            {/* Gemini cache indicator */}
+            {/* GenAI cache indicator */}
             <div 
               className={`flex items-center space-x-2 px-2 py-1 rounded-2xl text-xs font-medium ${
-                cacheInfo.gemini_cache_hit ? 'cache-hit' : 'cache-miss'
+                cacheInfo.genai_cache_hit ? 'cache-hit' : 'cache-miss'
               }`}
             >
               <Zap className="w-3 h-3" />
-              <span>Gemini: {cacheInfo.gemini_cache_hit ? 'Cached' : 'Fresh'}</span>
+              <span>GenAI: {cacheInfo.genai_cache_hit ? 'Cached' : 'Fresh'}</span>
             </div>
 
             {/* Batch processing indicator (if applicable) */}

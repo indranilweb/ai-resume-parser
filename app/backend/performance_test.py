@@ -54,7 +54,7 @@ def test_performance():
         print(f"   • Total resumes: {cache_info.get('total_resumes', 0)}")
         print(f"   • Filtered resumes: {cache_info.get('filtered_resumes', 0)}")
         print(f"   • Vector cache hit: {cache_info.get('vector_cache_hit', False)}")
-        print(f"   • Gemini cache hit: {cache_info.get('gemini_cache_hit', False)}")
+        print(f"   • GenAI cache hit: {cache_info.get('genai_cache_hit', False)}")
         
         if cache_info.get('total_batches', 0) > 1:
             print(f"   • Batches processed: {cache_info.get('batches_processed', 0)}/{cache_info.get('total_batches', 0)}")

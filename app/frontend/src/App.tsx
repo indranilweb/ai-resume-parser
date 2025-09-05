@@ -97,7 +97,7 @@ const App: React.FC = () => {
   };
 
   const handleClearAllCache = async () => {
-    if (confirm('Are you sure you want to clear ALL cache? This will remove all cached data including both Gemini and Vector cache.')) {
+    if (confirm('Are you sure you want to clear ALL cache? This will remove all cached data including both GenAI and Vector cache.')) {
       try {
         const response = await ApiService.clearCache({ type: 'all' });
         

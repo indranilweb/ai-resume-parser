@@ -21,7 +21,8 @@ AZURE_OPENAI_API_VERSION = getattr(app_config, 'AZURE_OPENAI_API_VERSION', os.ge
 PERF_CONFIG = getattr(app_config, 'PERFORMANCE_CONFIG', {})
 
 # Feature flags & performance tuning
-ENABLE_VECTOR_SEARCH = True
+ENABLE_VECTOR_SEARCH = getattr(app_config, 'ENABLE_VECTOR_SEARCH', True)
+LOCAL_MODEL_PATH = getattr(app_config, 'LOCAL_MODEL_PATH', 'models/all-MiniLM-L6-v2')
 SIMILARITY_THRESHOLD = PERF_CONFIG.get('SIMILARITY_THRESHOLD', 0.3)
 MAX_VECTOR_RESULTS = None
 BATCH_SIZE = 20
@@ -39,22 +40,26 @@ _embedding_model = None
 
 
 def get_embedding_model():
-    # Initialize the sentence transformer model for embeddings
+    """Initialize the sentence transformer model for embeddings using local model."""
     global _embedding_model
     if _embedding_model is not None:
         return _embedding_model
     if not ENABLE_VECTOR_SEARCH:
         return None
     try:
-        # Try to load from local model directory first (for offline deployment)
-        local_model_path = os.path.join(os.path.dirname(__file__), '..', 'models', 'all-MiniLM-L6-v2')
+        # Try to load from configurable local model directory first (for offline deployment)
+        local_model_path = os.path.join(os.path.dirname(__file__), '..', LOCAL_MODEL_PATH)
+        local_model_path = os.path.abspath(local_model_path)
+        
         if os.path.exists(local_model_path):
             _embedding_model = SentenceTransformer(local_model_path)
             print(f"🔧 Sentence transformer model loaded from local path: {local_model_path}")
         else:
+            print(f"⚠️ Local model not found at: {local_model_path}")
+            print("🔧 Attempting to download from Hugging Face (requires internet)...")
             # Fallback to downloading from Hugging Face (requires internet)
             _embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
-            print("🔧 Sentence transformer model loaded from Hugging Face")
+            print("✅ Sentence transformer model downloaded from Hugging Face")
     except Exception as e:
         print(f"⚠️ Warning: Could not load sentence transformer model: {e}")
         print("Vector search will be disabled")
@@ -84,7 +89,7 @@ else:
 __all__ = [
     'CACHE_DIR','VECTOR_DB_DIR','AI_PROVIDER','GEMINI_KEY','GEMINI_MODEL',
     'AZURE_OPENAI_API_KEY','AZURE_OPENAI_ENDPOINT','AZURE_OPENAI_DEPLOYMENT','AZURE_OPENAI_API_VERSION','PERF_CONFIG',
-    'ENABLE_VECTOR_SEARCH','SIMILARITY_THRESHOLD','MAX_VECTOR_RESULTS','BATCH_SIZE',
+    'ENABLE_VECTOR_SEARCH','LOCAL_MODEL_PATH','SIMILARITY_THRESHOLD','MAX_VECTOR_RESULTS','BATCH_SIZE',
     'MAX_RESUMES_PER_BATCH','ENABLE_PARALLEL_READING','MAX_WORKERS','BATCH_DELAY_SECONDS',
     'ENABLE_MEMORY_OPTIMIZATION','get_embedding_model'
 ]

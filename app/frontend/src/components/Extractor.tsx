@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Download, FolderTree, Wrench, Award, MapPin } from 'lucide-react';
 import MultiSelectDropdown from './MultiSelectDropdown';
+import { ApiService } from '../services/api';
 
 const Extractor: React.FC = () => {
   const [skillFamily, setSkillFamily] = useState<string>('');
@@ -12,10 +13,16 @@ const Extractor: React.FC = () => {
   const gradeOptions = ['P', 'PAT', 'PA', 'A', 'SA', 'M', 'SM'];
   const locationOptions = ['Pune', 'Kolkata', 'Chennai', 'Hyderabad', 'Bangalore'];
 
-  const handleDownload = () => {
-    // Placeholder for API call
-    console.log('Download clicked:', { skillFamily, skills: selectedSkills, grades: selectedGrades, locations: selectedLocations });
+  const handleDownload = async () => {
+    const criteria = {
+      skill_family: skillFamily,
+      skill: selectedSkills?.join(', '),
+      grade: selectedGrades?.join(', '),
+      locations: selectedLocations?.join(', '),
+    };
+    console.log('Download clicked:', criteria);
     // TODO: Implement API call
+    const response = await ApiService.scanProfiles(criteria);
   };
 
   return (

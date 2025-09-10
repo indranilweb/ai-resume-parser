@@ -44,6 +44,7 @@ PERFORMANCE_CONFIG = {
     "SIMILARITY_THRESHOLD": get_float_env("SIMILARITY_THRESHOLD", 0.3),
     "BATCH_DELAY_SECONDS": get_int_env("BATCH_DELAY_SECONDS", 1),
     "ENABLE_MEMORY_OPTIMIZATION": get_bool_env("ENABLE_MEMORY_OPTIMIZATION", True),
+    "MIN_MATCH_SCORE": get_int_env("MIN_MATCH_SCORE", 30),  # Minimum score threshold for including candidates
 }
 
 # Vector Search Configuration

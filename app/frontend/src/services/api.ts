@@ -1,4 +1,4 @@
-import { ParseResumeResponse, ClearCacheRequest, ClearCacheResponse } from '../types';
+import { ParseResumeResponse, ClearCacheRequest, ClearCacheResponse, ScanProfilesResponse } from '../types';
 
 const EXTRACTOR_API_BASE_URL = 'http://localhost:5296';
 const PROFILER_API_BASE_URL = 'http://localhost:8000';
@@ -6,7 +6,7 @@ const PROFILER_API_BASE_URL = 'http://localhost:8000';
 export class ApiService {
   static async scanProfiles(
     criteria: Record<string, any>,
-  ): Promise<any> {
+  ): Promise<ScanProfilesResponse> {
     const response = await fetch(`${EXTRACTOR_API_BASE_URL}/api/ProfileScan`, {
       method: 'POST',
       headers: {

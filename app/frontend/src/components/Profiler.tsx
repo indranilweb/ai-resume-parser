@@ -10,12 +10,12 @@ import { ApiService } from '../services/api';
 import { sortResumesByScore } from '../utils/resume';
 
 const Profiler: React.FC = () => {
-  const [folderPath, setFolderPath] = useState<string>('');
+  const [folderPath, setFolderPath] = useState<string>('C:\TMP');
   const [skills, setSkills] = useState<string>('');
   const [resumes, setResumes] = useState<Resume[]>([]);
   const [cacheInfo, setCacheInfo] = useState<CacheInfo | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isStep2Enabled, setIsStep2Enabled] = useState<boolean>(false);
+  const [isStep2Enabled, setIsStep2Enabled] = useState<boolean>(true);
   const [selectedResume, setSelectedResume] = useState<Resume | null>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isForceAnalyze, setIsForceAnalyze] = useState<boolean>(false);

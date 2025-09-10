@@ -1,13 +1,18 @@
 import React, { useState } from 'react';
-import { Download, FolderTree, Wrench, Award, MapPin } from 'lucide-react';
+import { Download, FolderTree, Wrench, Award, MapPin, CheckCircle, XCircle } from 'lucide-react';
 import MultiSelectDropdown from './MultiSelectDropdown';
+import LoadingIndicator from './LoadingIndicator';
 import { ApiService } from '../services/api';
+import { ScanProfilesResponse } from '../types';
 
 const Extractor: React.FC = () => {
   const [skillFamily, setSkillFamily] = useState<string>('');
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [selectedGrades, setSelectedGrades] = useState<string[]>([]);
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [responseMessage, setResponseMessage] = useState<string>('');
+  const [isSuccess, setIsSuccess] = useState<boolean>(false);
 
   const skillOptions = ['.NET', '.NET Core', 'Angular', 'Python', 'AWS'];
   const gradeOptions = ['P', 'PAT', 'PA', 'A', 'SA', 'M', 'SM'];
@@ -21,8 +26,29 @@ const Extractor: React.FC = () => {
       locations: selectedLocations?.join(', '),
     };
     console.log('Download clicked:', criteria);
-    // TODO: Implement API call
-    const response = await ApiService.scanProfiles(criteria);
+    
+    setIsLoading(true);
+    setResponseMessage('');
+    setIsSuccess(false);
+    
+    try {
+      const response: ScanProfilesResponse = await ApiService.scanProfiles(criteria);
+      console.log('Download completed:', response);
+      
+      if (response.is_success) {
+        setIsSuccess(true);
+        setResponseMessage(`Success: ${response.status_message}. Downloaded ${response.total_profiles} profiles.`);
+      } else {
+        setIsSuccess(false);
+        setResponseMessage(response.status_message);
+      }
+    } catch (error) {
+      console.error('Download failed:', error);
+      setIsSuccess(false);
+      setResponseMessage(`Download failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -88,12 +114,37 @@ const Extractor: React.FC = () => {
       <div className="mt-6">
         <button
           onClick={handleDownload}
+          disabled={isLoading}
           className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-gray-50 dark:focus:ring-offset-gray-800 transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Download className="w-4 h-4" />
-          <span>Download</span>
+          <span>{isLoading ? 'Downloading...' : 'Download'}</span>
         </button>
       </div>
+
+      {/* Loading Indicator */}
+      {isLoading && (
+        <LoadingIndicator 
+          isVisible={isLoading} 
+          message="Scanning profiles based on your criteria..." 
+        />
+      )}
+
+      {/* Response Message */}
+      {responseMessage && !isLoading && (
+        <div className={`mt-4 p-3 rounded-md text-sm flex items-start space-x-2 ${
+          isSuccess 
+            ? 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-200' 
+            : 'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-200'
+        }`}>
+          {isSuccess ? (
+            <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+          ) : (
+            <XCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+          )}
+          <span>{responseMessage}</span>
+        </div>
+      )}
     </div>
   );
 };

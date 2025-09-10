@@ -26,6 +26,13 @@ export interface ParseResumeResponse {
   cache_info: CacheInfo;
 }
 
+export interface ScanProfilesResponse {
+  is_success: boolean;
+  profiles: Array<object>;
+  status_message: string;
+  total_profiles: number;
+}
+
 export interface ClearCacheRequest {
   type: 'current' | 'all';
   cache_key?: string;

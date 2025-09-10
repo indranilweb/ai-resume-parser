@@ -22,8 +22,13 @@ export class ApiService {
         throw new Error(data.error);
       }
 
-      if (data.summary) {
-        console.log('📊 Result:', data.summary);
+      // Check if result exists and has error in nested structure
+      if (data.result && !data.result.is_success) {
+        throw new Error(data.result.status_message || 'Profile scan failed');
+      }
+
+      if (data.result && data.result.total_profiles > 0) {
+        console.log('📊 Result:', `Found ${data.result.total_profiles} profiles`);
       }
 
       return data;

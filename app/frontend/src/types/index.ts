@@ -27,10 +27,13 @@ export interface ParseResumeResponse {
 }
 
 export interface ScanProfilesResponse {
-  is_success: boolean;
-  profiles: Array<object>;
-  status_message: string;
-  total_profiles: number;
+  message: string;
+  result: {
+    is_success: boolean;
+    profiles: Array<object>;
+    status_message: string;
+    total_profiles: number;
+  };
 }
 
 export interface ClearCacheRequest {

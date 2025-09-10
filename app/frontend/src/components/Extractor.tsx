@@ -35,12 +35,12 @@ const Extractor: React.FC = () => {
       const response: ScanProfilesResponse = await ApiService.scanProfiles(criteria);
       console.log('Download completed:', response);
       
-      if (response.is_success) {
+      if (response.result.is_success) {
         setIsSuccess(true);
-        setResponseMessage(`Success: ${response.status_message}. Downloaded ${response.total_profiles} profiles.`);
+        setResponseMessage(`Success: ${response.result.status_message}. Downloaded ${response.result.total_profiles} profiles.`);
       } else {
         setIsSuccess(false);
-        setResponseMessage(response.status_message);
+        setResponseMessage(response.result.status_message);
       }
     } catch (error) {
       console.error('Download failed:', error);

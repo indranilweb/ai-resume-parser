@@ -12,10 +12,10 @@ const App: React.FC = () => {
 
   return (
     <ThemeProvider>
-      <div className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen font-sans transition-colors duration-200">
+      <div className="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen font-sans transition-colors duration-200">
         <div className="container mx-auto px-4 py-6 max-w-7xl">
           {/* Header Section */}
-          <div className="border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 p-6 mb-6">
+          <div className="border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 p-6 mb-6">
             <Header resumeCount={cacheInfo?.total_resumes || 0} />
           </div>
 

@@ -10,7 +10,7 @@ import { ApiService } from '../services/api';
 import { sortResumesByScore } from '../utils/resume';
 
 const Profiler: React.FC = () => {
-  const [folderPath, setFolderPath] = useState<string>('C:\TMP');
+  const [folderPath, setFolderPath] = useState<string>('C:\\TMP\\Resumes');
   const [skills, setSkills] = useState<string>('');
   const [resumes, setResumes] = useState<Resume[]>([]);
   const [cacheInfo, setCacheInfo] = useState<CacheInfo | null>(null);
@@ -117,7 +117,7 @@ const Profiler: React.FC = () => {
   return (
     <>
       {/* Controls Section */}
-      <div className="border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 p-6 mb-6 transition-colors duration-200">
+      <div className="border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 p-6 mb-6 transition-colors duration-200">
         <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Resume Profiler</h2>
         <p className="text-gray-600 dark:text-gray-400 text-sm mb-6">
           Find the right candidates by analyzing resumes with AI technology.

@@ -79,7 +79,7 @@ const ResumeDetailsModal: React.FC<ResumeDetailsModalProps> = ({
                   <TrendingUp className="w-4 h-4 mr-2 text-blue-600 dark:text-blue-400" />
                   Score Breakdown
                 </h4>
-                <div className="bg-gray-50 dark:bg-gray-800 rounded-md p-3 transition-colors duration-200">
+                <div className="bg-white dark:bg-gray-800 rounded-md p-3 transition-colors duration-200">
                   <p className="text-gray-900 dark:text-gray-100 text-sm leading-relaxed">
                     {resume.score_breakdown || 'No detailed breakdown available.'}
                   </p>
@@ -122,7 +122,7 @@ const ResumeDetailsModal: React.FC<ResumeDetailsModalProps> = ({
                   <User className="w-4 h-4 mr-2 text-blue-600 dark:text-blue-400" />
                   Professional Summary
                 </h4>
-                <div className="bg-gray-50 dark:bg-gray-800 rounded-md p-3 transition-colors duration-200">
+                <div className="bg-white dark:bg-gray-800 rounded-md p-3 transition-colors duration-200">
                   <p className="text-gray-900 dark:text-gray-100 text-sm leading-relaxed">
                     {resume.summary || 'No summary available.'}
                   </p>

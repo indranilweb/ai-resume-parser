@@ -46,7 +46,7 @@ const FolderSelection: React.FC<FolderSelectionProps> = ({
         <button
           onClick={onProceed}
           disabled={!folderPath || folderPath === 'No folder selected...'}
-          className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-blue-600 dark:text-blue-500 text-sm font-medium rounded-md hover:bg-blue-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-50 dark:focus:ring-offset-gray-800 transition-colors flex items-center space-x-2 disabled:bg-gray-200 dark:disabled:bg-gray-700 disabled:text-gray-400 dark:disabled:text-gray-500 disabled:cursor-not-allowed disabled:hover:bg-gray-200 dark:disabled:hover:bg-gray-700 disabled:hover:text-gray-400 dark:disabled:hover:text-gray-500"
+          className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-blue-600 dark:text-blue-500 text-sm font-medium rounded-md hover:bg-blue-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-800 transition-colors flex items-center space-x-2 disabled:bg-gray-200 dark:disabled:bg-gray-700 disabled:text-gray-400 dark:disabled:text-gray-500 disabled:cursor-not-allowed disabled:hover:bg-gray-200 dark:disabled:hover:bg-gray-700 disabled:hover:text-gray-400 dark:disabled:hover:text-gray-500"
         >
           <ArrowRight className="w-4 h-4" />
           <span>Proceed</span>

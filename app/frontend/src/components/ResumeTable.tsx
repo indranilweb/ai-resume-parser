@@ -13,7 +13,7 @@ interface ResumeTableProps {
 const ResumeTable: React.FC<ResumeTableProps> = ({ resumes, onViewDetails, hasSearched = false, folderPath = '' }) => {
   if (resumes.length === 0) {
     return (
-      <div className="text-center border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 py-12 px-6 transition-colors duration-200">
+      <div className="text-center border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 py-12 px-6 transition-colors duration-200">
         <div className="flex flex-col items-center space-y-3">
           <Code className="text-gray-500 dark:text-gray-400 w-10 h-10" />
           {!hasSearched ? (
@@ -38,7 +38,7 @@ const ResumeTable: React.FC<ResumeTableProps> = ({ resumes, onViewDetails, hasSe
   }
 
   return (
-    <div className="border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 overflow-hidden transition-colors duration-200">
+    <div className="border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 overflow-hidden transition-colors duration-200">
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-gray-100 dark:bg-gray-900 border-b border-gray-300 dark:border-gray-700">

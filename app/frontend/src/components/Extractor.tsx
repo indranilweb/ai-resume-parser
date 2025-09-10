@@ -35,12 +35,12 @@ const Extractor: React.FC = () => {
       const response: ScanProfilesResponse = await ApiService.scanProfiles(criteria);
       console.log('Download completed:', response);
       
-      if (response.is_success) {
+      if (response.result.is_success) {
         setIsSuccess(true);
-        setResponseMessage(`Success: ${response.status_message}. Downloaded ${response.total_profiles} profiles.`);
+        setResponseMessage(`Success: ${response.result.status_message}. Downloaded ${response.result.total_profiles} profiles.`);
       } else {
         setIsSuccess(false);
-        setResponseMessage(response.status_message);
+        setResponseMessage(response.result.status_message);
       }
     } catch (error) {
       console.error('Download failed:', error);
@@ -52,7 +52,7 @@ const Extractor: React.FC = () => {
   };
 
   return (
-    <div className="border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 p-6 transition-colors duration-200">
+    <div className="border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 p-6 transition-colors duration-200">
       <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Resume Extractor</h2>
       <p className="text-gray-600 dark:text-gray-400 text-sm mb-6">
         Extract specific information from resumes based on your criteria.
@@ -115,7 +115,7 @@ const Extractor: React.FC = () => {
         <button
           onClick={handleDownload}
           disabled={isLoading}
-          className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-gray-50 dark:focus:ring-offset-gray-800 transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-800 transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Download className="w-4 h-4" />
           <span>{isLoading ? 'Downloading...' : 'Download'}</span>

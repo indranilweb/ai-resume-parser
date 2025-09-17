@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Phone, Clock, Building, Code, TrendingUp, Info, ExternalLink, Mail, CheckSquare, Square } from 'lucide-react';
+import { User, Phone, Clock, Building, Code, TrendingUp, Info, ExternalLink, Mail } from 'lucide-react';
 import { Resume } from '../types';
 import { getScoreBadgeClass, filterValidCompanies } from '../utils/resume';
 import { ApiService } from '../services/api';
@@ -13,6 +13,7 @@ interface ResumeTableProps {
 
 const ResumeTable: React.FC<ResumeTableProps> = ({ resumes, onViewDetails, hasSearched = false, folderPath = '' }) => {
   const [selectedResumes, setSelectedResumes] = useState<Set<string>>(new Set());
+  const [isEmailLoading, setIsEmailLoading] = useState<boolean>(false);
 
   const handleSelectResume = (resumeSourceFile: string) => {
     const newSelection = new Set(selectedResumes);
@@ -38,12 +39,15 @@ const ResumeTable: React.FC<ResumeTableProps> = ({ resumes, onViewDetails, hasSe
       return;
     }
 
+    setIsEmailLoading(true);
     try {
       const selectedFiles = Array.from(selectedResumes);
       await ApiService.openEmailWithAttachments(selectedFiles, folderPath);
     } catch (error) {
       console.error('Failed to open email:', error);
       alert('Failed to open email client. Please check the console for details.');
+    } finally {
+      setIsEmailLoading(false);
     }
   };
 
@@ -84,15 +88,15 @@ const ResumeTable: React.FC<ResumeTableProps> = ({ resumes, onViewDetails, hasSe
         </div>
         <button
           onClick={handleEmailPanelists}
-          disabled={selectedResumes.size === 0}
+          disabled={selectedResumes.size === 0 || isEmailLoading}
           className={`flex items-center px-3 py-1.5 rounded text-xs font-medium transition-colors ${
-            selectedResumes.size === 0
+            selectedResumes.size === 0 || isEmailLoading
               ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
               : 'bg-blue-600 hover:bg-blue-700 text-white'
           }`}
         >
           <Mail className="w-3.5 h-3.5 mr-1.5" />
-          Email Panelists
+          {isEmailLoading ? 'Opening Email...' : 'Email Panelists'}
         </button>
       </div>
       
@@ -105,11 +109,12 @@ const ResumeTable: React.FC<ResumeTableProps> = ({ resumes, onViewDetails, hasSe
                   onClick={handleSelectAll}
                   className="flex items-center justify-center w-full"
                 >
-                  {selectedResumes.size === resumes.length && resumes.length > 0 ? (
-                    <CheckSquare className="w-4 h-4" />
-                  ) : (
-                    <Square className="w-4 h-4" />
-                  )}
+                  <input
+                    type="checkbox"
+                    checked={selectedResumes.size === resumes.length && resumes.length > 0}
+                    onChange={() => {}} // Handled by onClick
+                    className="w-4 h-4 text-blue-600 bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 focus:ring-2"
+                  />
                 </button>
               </th>
               <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
@@ -191,11 +196,12 @@ const ResumeTableRow: React.FC<ResumeTableRowProps> = ({ resume, onViewDetails, 
           onClick={onSelect}
           className="flex items-center justify-center w-full"
         >
-          {isSelected ? (
-            <CheckSquare className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-          ) : (
-            <Square className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-          )}
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={() => {}} // Handled by onClick
+            className="w-4 h-4 text-blue-600 bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 focus:ring-2"
+          />
         </button>
       </td>
       <td className="px-4 py-3">

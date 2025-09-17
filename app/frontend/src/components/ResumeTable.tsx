@@ -1,7 +1,8 @@
-import React from 'react';
-import { User, Phone, Clock, Building, Code, TrendingUp, Info, ExternalLink } from 'lucide-react';
+import React, { useState } from 'react';
+import { User, Phone, Clock, Building, Code, TrendingUp, Info, ExternalLink, Mail } from 'lucide-react';
 import { Resume } from '../types';
 import { getScoreBadgeClass, filterValidCompanies } from '../utils/resume';
+import { ApiService } from '../services/api';
 
 interface ResumeTableProps {
   resumes: Resume[];
@@ -11,6 +12,45 @@ interface ResumeTableProps {
 }
 
 const ResumeTable: React.FC<ResumeTableProps> = ({ resumes, onViewDetails, hasSearched = false, folderPath = '' }) => {
+  const [selectedResumes, setSelectedResumes] = useState<Set<string>>(new Set());
+  const [isEmailLoading, setIsEmailLoading] = useState<boolean>(false);
+
+  const handleSelectResume = (resumeSourceFile: string) => {
+    const newSelection = new Set(selectedResumes);
+    if (newSelection.has(resumeSourceFile)) {
+      newSelection.delete(resumeSourceFile);
+    } else {
+      newSelection.add(resumeSourceFile);
+    }
+    setSelectedResumes(newSelection);
+  };
+
+  const handleSelectAll = () => {
+    if (selectedResumes.size === resumes.length) {
+      setSelectedResumes(new Set());
+    } else {
+      setSelectedResumes(new Set(resumes.map(resume => resume.source_file)));
+    }
+  };
+
+  const handleEmailPanelists = async () => {
+    if (selectedResumes.size === 0) {
+      alert('Please select at least one resume to email.');
+      return;
+    }
+
+    setIsEmailLoading(true);
+    try {
+      const selectedFiles = Array.from(selectedResumes);
+      await ApiService.openEmailWithAttachments(selectedFiles, folderPath);
+    } catch (error) {
+      console.error('Failed to open email:', error);
+      alert('Failed to open email client. Please check the console for details.');
+    } finally {
+      setIsEmailLoading(false);
+    }
+  };
+
   if (resumes.length === 0) {
     return (
       <div className="text-center border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 py-12 px-6 transition-colors duration-200">
@@ -39,10 +79,44 @@ const ResumeTable: React.FC<ResumeTableProps> = ({ resumes, onViewDetails, hasSe
 
   return (
     <div className="border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 overflow-hidden transition-colors duration-200">
+      {/* Toolbar */}
+      <div className="bg-gray-50 dark:bg-gray-900 border-b border-gray-300 dark:border-gray-700 px-4 py-3 flex justify-between items-center">
+        <div className="flex items-center space-x-2">
+          <span className="text-sm text-gray-600 dark:text-gray-400">
+            {selectedResumes.size > 0 ? `${selectedResumes.size} selected` : `${resumes.length} resume(s)`}
+          </span>
+        </div>
+        <button
+          onClick={handleEmailPanelists}
+          disabled={selectedResumes.size === 0 || isEmailLoading}
+          className={`flex items-center px-3 py-1.5 rounded text-xs font-medium transition-colors ${
+            selectedResumes.size === 0 || isEmailLoading
+              ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+              : 'bg-blue-600 hover:bg-blue-700 text-white'
+          }`}
+        >
+          <Mail className="w-3.5 h-3.5 mr-1.5" />
+          {isEmailLoading ? 'Opening Email...' : 'Email Panelists'}
+        </button>
+      </div>
+      
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-gray-100 dark:bg-gray-900 border-b border-gray-300 dark:border-gray-700">
             <tr>
+              <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider w-12">
+                <button
+                  onClick={handleSelectAll}
+                  className="flex items-center justify-center w-full"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedResumes.size === resumes.length && resumes.length > 0}
+                    onChange={() => {}} // Handled by onClick
+                    className="w-4 h-4 text-blue-600 bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 focus:ring-2"
+                  />
+                </button>
+              </th>
               <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                 <div className="flex items-center">
                   <User className="w-3.5 h-3.5 mr-2" />
@@ -92,7 +166,9 @@ const ResumeTable: React.FC<ResumeTableProps> = ({ resumes, onViewDetails, hasSe
               <ResumeTableRow 
                 key={`${resume.source_file}-${index}`}
                 resume={resume} 
-                onViewDetails={onViewDetails} 
+                onViewDetails={onViewDetails}
+                isSelected={selectedResumes.has(resume.source_file)}
+                onSelect={() => handleSelectResume(resume.source_file)}
               />
             ))}
           </tbody>
@@ -105,14 +181,29 @@ const ResumeTable: React.FC<ResumeTableProps> = ({ resumes, onViewDetails, hasSe
 interface ResumeTableRowProps {
   resume: Resume;
   onViewDetails: (resume: Resume) => void;
+  isSelected: boolean;
+  onSelect: () => void;
 }
 
-const ResumeTableRow: React.FC<ResumeTableRowProps> = ({ resume, onViewDetails }) => {
+const ResumeTableRow: React.FC<ResumeTableRowProps> = ({ resume, onViewDetails, isSelected, onSelect }) => {
   const score = resume.match_score || 0;
   const validCompanies = filterValidCompanies(resume.last_3_companies);
 
   return (
     <tr className="hover:bg-gray-100 dark:hover:bg-gray-50 hover:bg-opacity-50 dark:hover:bg-opacity-5 transition-colors duration-150">
+      <td className="px-4 py-3">
+        <button
+          onClick={onSelect}
+          className="flex items-center justify-center w-full"
+        >
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={() => {}} // Handled by onClick
+            className="w-4 h-4 text-blue-600 bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 focus:ring-2"
+          />
+        </button>
+      </td>
       <td className="px-4 py-3">
         <div className="font-medium text-gray-900 dark:text-gray-100 text-sm">{resume.name || '—'}</div>
       </td>

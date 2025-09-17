@@ -10,6 +10,14 @@ export interface Resume {
   summary?: string;
 }
 
+export interface ParseStats {
+  successful_files: string[];
+  failed_files: string[];
+  total_files: number;
+  success_count: number;
+  failure_count: number;
+}
+
 export interface CacheInfo {
   cache_key: string;
   vector_cache_hit: boolean;
@@ -19,6 +27,7 @@ export interface CacheInfo {
   processing_time?: number;
   total_batches?: number;
   batches_processed?: number;
+  parse_stats?: ParseStats;
 }
 
 export interface ParseResumeResponse {

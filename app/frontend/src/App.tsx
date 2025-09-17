@@ -4,11 +4,9 @@ import Header from './components/Header';
 import TabNavigation from './components/TabNavigation';
 import Extractor from './components/Extractor';
 import Profiler from './components/Profiler';
-import { CacheInfo } from './types';
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'extractor' | 'profiler'>('extractor');
-  const [cacheInfo] = useState<CacheInfo | null>(null);
 
   return (
     <ThemeProvider>
@@ -16,7 +14,7 @@ const App: React.FC = () => {
         <div className="container mx-auto px-4 py-6 max-w-7xl">
           {/* Header Section */}
           <div className="border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 p-6 mb-6">
-            <Header resumeCount={cacheInfo?.total_resumes || 0} />
+            <Header />
           </div>
 
           {/* Tab Navigation */}

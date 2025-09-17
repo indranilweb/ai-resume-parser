@@ -1,5 +1,5 @@
 import os
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 import pypdf
 import docx
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -71,9 +71,17 @@ def _read_resume_file_safe(file_info: tuple) -> tuple:
         return filename, None
 
 
-def read_resumes_parallel(resume_files: List[str], resume_dir: str, progress_tracker: Optional[ProgressTracker] = None) -> Dict[str, str]:
-    """Read multiple resume files in parallel for better performance."""
+def read_resumes_parallel(resume_files: List[str], resume_dir: str, progress_tracker: Optional[ProgressTracker] = None) -> Tuple[Dict[str, str], Dict[str, List[str]]]:
+    """Read multiple resume files in parallel for better performance.
+    
+    Returns:
+        Tuple containing:
+        - Dict of successfully read files {filename: content}
+        - Dict with parsing statistics {'successful_files': [...], 'failed_files': [...]}
+    """
     resumes_data: Dict[str, str] = {}
+    successful_files: List[str] = []
+    failed_files: List[str] = []
     
     if not ENABLE_PARALLEL_READING or len(resume_files) < 4:
         # Sequential reading for small datasets
@@ -82,12 +90,22 @@ def read_resumes_parallel(resume_files: List[str], resume_dir: str, progress_tra
             content = get_resume_content(file_path)
             if content and content.strip():
                 resumes_data[filename] = content
+                successful_files.append(filename)
                 print(f"  ✅ Successfully read '{filename}'")
                 if progress_tracker: 
                     progress_tracker.update()
             else:
+                failed_files.append(filename)
                 print(f"  ❌ Could not read content from '{filename}'. Skipping.")
-        return resumes_data
+        
+        parse_stats = {
+            'successful_files': successful_files,
+            'failed_files': failed_files,
+            'total_files': len(resume_files),
+            'success_count': len(successful_files),
+            'failure_count': len(failed_files)
+        }
+        return resumes_data, parse_stats
 
     # Parallel reading for larger datasets
     print(f"📚 Reading {len(resume_files)} files in parallel (max {MAX_WORKERS} workers)...")
@@ -101,9 +119,19 @@ def read_resumes_parallel(resume_files: List[str], resume_dir: str, progress_tra
             filename, content = future.result()
             if content:
                 resumes_data[filename] = content
+                successful_files.append(filename)
                 print(f"  ✅ Successfully read '{filename}'")
+            else:
+                failed_files.append(filename)
             if progress_tracker: progress_tracker.update()
 
-    return resumes_data
+    parse_stats = {
+        'successful_files': successful_files,
+        'failed_files': failed_files,
+        'total_files': len(resume_files),
+        'success_count': len(successful_files),
+        'failure_count': len(failed_files)
+    }
+    return resumes_data, parse_stats
 
 __all__ = ['get_resume_content','read_resumes_parallel']

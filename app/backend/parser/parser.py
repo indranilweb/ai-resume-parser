@@ -50,11 +50,14 @@ class ResumeParser:
 
         # Use enhanced parallel file reading
         start_reading = time.time()
-        all_resumes_data = read_resumes_parallel(resume_files, resume_dir, file_progress)
+        all_resumes_data, parse_stats = read_resumes_parallel(resume_files, resume_dir, file_progress)
         file_progress.complete()
 
         reading_time = time.time() - start_reading
         print(f"📚 File reading completed in {reading_time:.2f}s")
+
+        # Add parse statistics to cache_info
+        cache_info['parse_stats'] = parse_stats
 
         if not all_resumes_data:
             print("\n❌ Could not read any resume content. Exiting.")

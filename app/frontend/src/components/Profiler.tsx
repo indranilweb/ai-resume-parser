@@ -5,6 +5,7 @@ import CacheStatus from './CacheStatus';
 import LoadingIndicator from './LoadingIndicator';
 import ResumeTable from './ResumeTable';
 import ResumeDetailsModal from './ResumeDetailsModal';
+import ParseStatsBadge from './ParseStatsBadge';
 import { Resume, CacheInfo } from '../types';
 import { ApiService } from '../services/api';
 import { sortResumesByScore } from '../utils/resume';
@@ -118,7 +119,12 @@ const Profiler: React.FC = () => {
     <>
       {/* Controls Section */}
       <div className="border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 p-6 mb-6 transition-colors duration-200">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Resume Profiler</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Resume Profiler</h2>
+          {cacheInfo?.parse_stats && (
+            <ParseStatsBadge parseStats={cacheInfo.parse_stats} />
+          )}
+        </div>
         <p className="text-gray-600 dark:text-gray-400 text-sm mb-6">
           Find the right candidates by analyzing resumes with AI technology.
         </p>

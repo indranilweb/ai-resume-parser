@@ -2,11 +2,9 @@ import React from 'react';
 import { FileText } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 
-interface HeaderProps {
-  resumeCount: number;
-}
+interface HeaderProps {}
 
-const Header: React.FC<HeaderProps> = ({ resumeCount }) => {
+const Header: React.FC<HeaderProps> = () => {
   return (
     <div className="flex items-center justify-between mb-3">
       <div className="flex items-center space-x-3">
@@ -18,15 +16,6 @@ const Header: React.FC<HeaderProps> = ({ resumeCount }) => {
         </h1>
       </div>
       <div className="flex items-center space-x-4">
-        {resumeCount > 0 && (
-          <div 
-            id="resume-count" 
-            className="text-xs text-gray-700 dark:text-white font-medium border border-gray-400 dark:border-gray-500 rounded-2xl px-2 py-1 resume-count-animate"
-          >
-            <span className="inline-block w-2 h-2 rounded-full bg-green-500 mr-1"></span>
-            <span>{resumeCount}</span> resume(s) analyzed
-          </div>
-        )}
         <ThemeToggle />
       </div>
     </div>

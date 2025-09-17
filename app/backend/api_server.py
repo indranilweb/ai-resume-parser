@@ -2,6 +2,8 @@
 
 import os
 import shutil
+import subprocess
+import platform
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 # Updated imports after modular refactor
@@ -91,4 +93,93 @@ async def clear_cache_endpoint(request: Request):
             return {"success": False, "error": "Invalid cache type or missing cache key for current cache"}
     except Exception as e:
         print(f"❌ Error clearing cache: {e}")
+        return {"success": False, "error": str(e)}
+
+@app.post("/open-email")
+async def open_email_with_attachments(request: Request):
+    """Open default email client with resume attachments."""
+    try:
+        request_data = await request.json()
+        selected_files = request_data.get("selectedFiles", [])
+        folder_path = request_data.get("folderPath", "")
+        
+        if not selected_files:
+            return {"success": False, "error": "No files selected"}
+        
+        # Build file paths
+        file_paths = []
+        for filename in selected_files:
+            if folder_path:
+                full_path = os.path.join(folder_path, filename)
+            else:
+                full_path = filename
+            
+            if os.path.exists(full_path):
+                file_paths.append(full_path)
+            else:
+                print(f"⚠️ File not found: {full_path}")
+        
+        if not file_paths:
+            return {"success": False, "error": "No valid files found"}
+        
+        # Create mailto URL with file attachments
+        system = platform.system().lower()
+        
+        if system == "windows":
+            # On Windows, we'll use the default email client via subprocess
+            # Create a PowerShell script to open Outlook or default mail client
+            powershell_script = '''
+Add-Type -AssemblyName Microsoft.Office.Interop.Outlook
+$outlook = New-Object -ComObject Outlook.Application
+$mail = $outlook.CreateItem(0)
+$mail.Subject = "Selected Resume Files"
+$mail.Body = "Please find the attached resume files for your review."
+'''
+            
+            # Add each file as attachment in PowerShell
+            for file_path in file_paths:
+                # Escape the path for PowerShell
+                escaped_path = file_path.replace("'", "''")
+                powershell_script += f"\n$mail.Attachments.Add('{escaped_path}')"
+            
+            powershell_script += "\n$mail.Display()"
+            
+            # Write PowerShell script to temp file and execute
+            temp_script_path = os.path.join(os.getenv('TEMP', '.'), 'email_attachments.ps1')
+            with open(temp_script_path, 'w', encoding='utf-8') as f:
+                f.write(powershell_script)
+            
+            try:
+                subprocess.run([
+                    'powershell.exe', 
+                    '-ExecutionPolicy', 'Bypass',
+                    '-File', temp_script_path
+                ], check=True)
+                
+                # Clean up temp file
+                os.remove(temp_script_path)
+                
+                print(f"✅ Email opened with {len(file_paths)} attachments")
+                return {"success": True, "message": f"Email opened with {len(file_paths)} attachments"}
+                
+            except subprocess.CalledProcessError as e:
+                # Fallback: try to open with default mail handler using file association
+                mailto_url = "mailto:?subject=Selected Resume Files&body=Please find the attached resume files for your review."
+                subprocess.run(['start', mailto_url], shell=True)
+                
+                return {"success": True, "message": "Email client opened (manual attachment required)", "files": file_paths}
+                
+        else:
+            # For macOS and Linux, use the default mailto handler
+            mailto_url = "mailto:?subject=Selected Resume Files&body=Please find the attached resume files for your review."
+            
+            if system == "darwin":  # macOS
+                subprocess.run(['open', mailto_url])
+            else:  # Linux
+                subprocess.run(['xdg-open', mailto_url])
+            
+            return {"success": True, "message": "Email client opened (manual attachment required)", "files": file_paths}
+            
+    except Exception as e:
+        print(f"❌ Error opening email: {e}")
         return {"success": False, "error": str(e)}

@@ -1,23 +1,26 @@
 # AI Resume Parser
 
-This project is an AI-powered resume parser designed to extract and analyze information from resumes efficiently. **Now optimized to handle large datasets of 1000+ resumes** with advanced batch processing and caching.
+This project is an AI-powered resume parser designed to extract and analyze information from resumes efficiently. **Now optimized to handle large datasets of 1000+ resumes** with advanced batch processing, caching, and **enhanced AI filtering** that scores all candidates instead of binary filtering.
 
 ## Features
 
 - **🚀 Scalable Processing**: Handles 1000+ resumes efficiently with batch processing
+- **🎯 Enhanced AI Filtering**: Scores ALL candidates (0-100) instead of binary filtering, reducing false negatives
 - **🎯 Semantic Search**: Vector-based filtering to reduce API costs and improve accuracy
 - **⚡ Smart Caching**: Multi-layer caching system for both vector search and API results
 - **📊 Progress Tracking**: Real-time progress indicators for large datasets
 - **🔄 Batch Processing**: Automatic batching to handle API limits and rate limiting
 - **💾 Multiple Formats**: Supports PDF, DOCX, TXT, and DOC files
-- **🔍 Skill Matching**: Advanced skill-based candidate filtering
+- **🔍 Skill Matching**: Advanced skill-based candidate filtering with configurable thresholds
 - **📈 Performance Metrics**: Detailed performance analytics and throughput monitoring
+- **🎛️ Configurable Scoring**: Adjustable minimum score thresholds for different hiring needs
 
 ### Core Capabilities
 - Extracts key details: name, contact information, skills, experience, and companies
-- Provides structured JSON output for easy integration
+- Provides structured JSON output with detailed scoring and explanations
 - Web-based interface with real-time processing updates
 - Force analyze option to bypass caching when needed
+- Better handling of experience ranges and job requirements
 
 ## Scalability Features
 
@@ -39,6 +42,7 @@ PERFORMANCE_CONFIG = {
     "SIMILARITY_THRESHOLD": 0.3,     # Vector search similarity threshold
     "BATCH_DELAY_SECONDS": 1,        # Delay between API batches to avoid rate limiting
     "ENABLE_MEMORY_OPTIMIZATION": True, # Enable memory optimization for large datasets
+    "MIN_MATCH_SCORE": 30,           # Minimum AI score threshold for including candidates
 }
 ```
 
@@ -124,7 +128,20 @@ Key configuration options in `app/backend/config.py`:
 
 - **GEMINI_KEY**: Your Gemini API key
 - **GEMINI_MODEL**: AI model to use (default: gemini-2.5-flash)
-- **PERFORMANCE_CONFIG**: Scalability and performance settings
+- **PERFORMANCE_CONFIG**: Scalability, performance, and filtering settings
+
+### New AI Filtering Settings
+- **MIN_MATCH_SCORE**: Minimum score threshold for including candidates (default: 30, range: 0-100)
+- **SIMILARITY_THRESHOLD**: Vector search threshold for pre-filtering (default: 0.2, lowered for more inclusivity)
+
+### Adjusting Filtering Strictness
+Set `MIN_MATCH_SCORE` based on your hiring needs:
+- **60+**: Very strict (only strong matches)
+- **45+**: Moderate (good and strong matches)  
+- **30**: Balanced (includes potential candidates) - **Default**
+- **20+**: Inclusive (cast wide net for screening)
+
+See `PROMPT_IMPROVEMENTS.md` for detailed information about the enhanced AI filtering system.
 
 ## Troubleshooting Large Datasets
 

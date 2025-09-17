@@ -85,9 +85,7 @@ const ResumeDetailsModal: React.FC<ResumeDetailsModalProps> = ({
                   </p>
                 </div>
                 <div className="mt-3 text-xs text-gray-600 dark:text-gray-400 border-t border-gray-300 dark:border-gray-700 pt-3">
-                  <strong>Scoring Criteria:</strong> Considering more weightage on skills and experience in relevant technologies.
-                  {/* <strong>Scoring Criteria:</strong> Skill Relevance (40%), Experience (20%), 
-                  Company Quality (15%), Project Complexity (15%), Education (10%) */}
+                  <strong>Scoring Criteria:</strong> Skills Match (40%), Experience Level (30%), Industry/Domain Relevance (20%), Role Seniority (10%)
                 </div>
               </div>
 

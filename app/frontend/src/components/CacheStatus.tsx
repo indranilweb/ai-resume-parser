@@ -64,7 +64,7 @@ const CacheStatus: React.FC<CacheStatusProps> = ({
             <button
               onClick={onClearCurrentCache}
               title="Clear current search cache"
-              className="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-red-600 dark:text-red-500 text-xs font-medium rounded-md hover:bg-red-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-800 transition-colors flex items-center space-x-1"
+              className="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-red-600 dark:text-red-500 text-xs font-medium rounded-md hover:bg-red-600 hover:text-white dark:hover:bg-red-600 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-800 transition-colors flex items-center space-x-1"
             >
               <Trash className="w-3 h-3" />
               <span>Current</span>
@@ -72,7 +72,7 @@ const CacheStatus: React.FC<CacheStatusProps> = ({
             <button
               onClick={onClearAllCache}
               title="Clear all cache"
-              className="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-red-600 dark:text-red-500 text-xs font-medium rounded-md hover:bg-red-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-800 transition-colors flex items-center space-x-1"
+              className="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-red-600 dark:text-red-500 text-xs font-medium rounded-md hover:bg-red-600 hover:text-white dark:hover:bg-red-600 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-800 transition-colors flex items-center space-x-1"
             >
               <Trash2 className="w-3 h-3" />
               <span>All</span>
